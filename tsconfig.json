@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["es6"],
+    "allowJs": true,
+    "noUnusedParameters": true,
+    "outDir": "build/src",
+    "rootDir": "src",
+    "sourceMap": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true
+  },
+  "exclude": ["node_modules", "jest.config.js", "**/*.spec.ts"]
+}
