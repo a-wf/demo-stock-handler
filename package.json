@@ -1,0 +1,49 @@
+{
+  "name": "abc-stock-handler",
+  "version": "1.0.0",
+  "description": "a stock handler for products a,b and c",
+  "main": "app.js",
+  "license": "Unlicense",
+  "scripts": {
+    "lint": "eslint '*/**/*.js' --quiet",
+    "lint-fix": "eslint '*/**/*.js' --quiet --fix",
+    "prettier-format": "prettier --config .prettierrc 'src/**/*js' --write",
+    "start": "NODE_ENV=production node build/src/app.js",
+    "dev": "NODE_ENV=development nodemon src/app.js",
+    "test": "jest",
+    "build": "mkdir -p build; ncp src/ build/; cp package.json build/; yarn build-docker",
+    "build-docker": "docker build . -t docker_stock_handler:1.0.0; docker save docker_stock_handler:1.0.0 > docker_stock_handler_1.0.0.img"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --quiet"
+    ]
+  },
+  "dependencies": {
+    "@hapi/joi": "17.1.1",
+    "cors": "2.8.5",
+    "dotenv": "8.2.0",
+    "express": "4.17.1",
+    "express-basic-auth": "1.2.0",
+    "express-openapi-validator": "3.16.8",
+    "express-prom-bundle": "6.1.0",
+    "mongoose": "5.9.28",
+    "prom-client": "12.0.0",
+    "rate-limiter-flexible": "2.1.10",
+    "swagger-ui-express": "4.1.4",
+    "winston": "3.3.3"
+  },
+  "devDependencies": {
+    "eslint": "7.6.0",
+    "eslint-config-prettier": "6.11.0",
+    "eslint-plugin-prettier": "3.1.4",
+    "jest": "26.2.2",
+    "nodemon": "2.0.4",
+    "prettier": "2.0.5"
+  }
+}
