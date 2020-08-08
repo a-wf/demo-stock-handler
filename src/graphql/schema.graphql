@@ -1,0 +1,43 @@
+"""
+Définition des types de données
+"""
+type User {
+  user_id: ID
+  name: String
+}
+
+type Product {
+  product_id: ID
+  name: String
+  in_stock: Int
+}
+
+type Holding {
+  holding_id: ID
+  holder: User
+  product: Stock
+  holding: Int
+}
+
+"""
+Définition des prototypes des GET
+"""
+type Query {
+  user(user_id: ID, name: String): [User]
+  products(product_id: ID, name: String): [Product]
+  holding(holding_id: ID, product: ID, holder: ID!): [Holding]
+}
+
+"""
+Définition des prototypes des POST, UPDATE, DELETE
+"""
+type Mutation {
+  addUser(user_id: ID, name: String!): User
+  deleteUser(user_id: ID!): User
+
+  addProduct(product_id: ID, name: String!, stock: Int!): Product
+
+  holdProduct(holder: ID!, product: ID!, holding: Int!): Holding
+  releaseProduct(holder: ID!, product: ID!, holding: Int!): Holding
+  moveHolding(holder: ID!, product: ID!): Holding
+}

@@ -7,15 +7,15 @@ exports.up = async function (knex) {
       table.string('name');
       table.timestamps(true, true);
     })
-    .createTable('stock', (table) => {
+    .createTable('products', (table) => {
       table.increments('id');
-      table.string('product');
+      table.string('name');
       table.integer('in_stock');
       table.timestamps(true, true);
     })
     .createTable('holding', (table) => {
       table.increments('id');
-      table.integer('owner_id').references('users.id');
+      table.integer('holder').references('users.id');
       table.integer('product').references('product.id');
       table.string('holding');
       table.timestamps(true, true);
@@ -23,5 +23,5 @@ exports.up = async function (knex) {
 };
 
 exports.down = function (knex) {
-  return knex.schema.dropTable('holding').dropTable('user').dropTable('stock');
+  return knex.schema.dropTable('holding').dropTable('users').dropTable('products');
 };

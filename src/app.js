@@ -15,7 +15,7 @@ import * as express from 'express';
 import * as promBundle from 'express-prom-bundle';
 import * as createRateLimiter from './libs/rate-limiter';
 import { rateLimiterMiddleware, logsMiddleware, errorHandler } from './middlewares';
-import db from './db';
+import db from './database';
 
 if (!config) {
   throw new Error('No config provided');
