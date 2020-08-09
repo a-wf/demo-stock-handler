@@ -49,7 +49,7 @@ class Logger {
           )
         }),
         new Winston.transports.File({
-          silent: common.nodeEnv === 'test',
+          // silent: common.nodeEnv === 'test',
           filename: config.file.path + '/' + config.file.name + '.log',
           maxsize: config.file.maxSize,
           maxFiles: config.file.maxFiles,

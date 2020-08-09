@@ -116,7 +116,7 @@ module.exports = {
   // roots: [
   //   "<rootDir>"
   // ],
-  roots: ['<rootDir>/tests/units'],
+  roots: ['<rootDir>/tests/'],
   // Allows you to use a custom runner instead of Jest's default test runner
   // runner: "jest-runner",
 
@@ -165,7 +165,7 @@ module.exports = {
   // testURL: "http://localhost",
 
   // Setting this value to "fake" allows the use of fake timers for functions such as "setTimeout"
-  // timers: "real",
+  // timers: 'fake'
 
   // A map from regular expressions to paths to transformers
   // transform: undefined,

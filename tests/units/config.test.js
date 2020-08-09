@@ -61,7 +61,7 @@ describe(`Test 'config loading' code`, () => {
     test('it should contains mandatory fields', () => {
       const { rateLimit } = config;
       const expected = {
-        points: 10,
+        points: 20,
         duration: 1
       };
       expect(rateLimit).toStrictEqual(expected);

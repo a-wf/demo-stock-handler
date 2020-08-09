@@ -38,7 +38,7 @@ This project presents a backend API server of a products depot.
 
 There are an administrator commands which can add new user accounts, new products, it can also delete account, increase or decrease an amount of products in stock.
 
-There are also public commands to list products, to list what products are holded by an user account, to hold new products, to inscreas and descrease an amount of holded products and to take out from the depot holded products.
+There are also secured (by apiKey) public commands to list products, to list what products are holded by an user account, to hold new products, to inscreas and descrease an amount of holded products and to take out from the depot holded products.
 
 This service is packaged in a docker image to easly deploy and test.
 
@@ -241,3 +241,14 @@ Note: we cannot use POST commands to increase or decrease already registered/hol
 
 As you can see, account table, product table and cart table.
 Each time an account user holds an amount of a product, the product amount in product table will decrease. It will decrease if user release an amount of this product.
+
+## Test
+
+### Unit tests
+
+For unit test, I didn't implemente all functions' tests, because I am worried about the remaining time,
+So for `controllers` and `queries` I just implemente tests for a few functions, for proving my capability to implement unit test with Jest. (I can also do Mocha, Chai, Sinon and Istanbul coverage, I choose Jest because it has more features by itself)
+
+### Integration tests
+
+Integration tests are implemented using Supertest. I didn't implement full use-cases tests because of the same reason for unit tests implementation. (Infact, with what I already implemented as integrations tests, full use-cases tests will be _"copy/past"_ of those tests with ordering logic)
