@@ -1,10 +1,11 @@
 version: '3'
 services:
-  stock_handler_container:
-    image: docker_stock_handler:1.0.0
+  products_depot_handler_container:
+    image: docker_products_depot_handler:1.0.0
     environment:
       NODE_ENV: development
     ports:
       - '8080:8080'
+      - '7777:7777'
     volumes:
-      - /var/log/stock_handler:/var/log
+      - /var/log/products_depot_handler:/var/log

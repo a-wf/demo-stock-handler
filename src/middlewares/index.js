@@ -1,6 +1,6 @@
 'use strict';
 
-const logger = require('./../libs/logger');
+const { logger } = require('./../libs/logger');
 
 /**
  * retae limiter middleware

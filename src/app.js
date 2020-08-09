@@ -1,9 +1,6 @@
 'use strict';
 
-const dotenv = require('dotenv');
-dotenv.config({ path: `${__dirname}/.env` });
 const config = require('./config');
-
 const fs = require('fs');
 const http = require('http');
 const https = require('https');
@@ -16,7 +13,7 @@ const promBundle = require('express-prom-bundle');
 
 const OpenApiValidator = require('express-openapi-validator').OpenApiValidator;
 
-const logger = require('./libs/logger');
+const { logger } = require('./libs/logger');
 const db = require('./database');
 const controllers = require('./controllers');
 const { createRateLimiterMongo } = require('./libs/rate-limiter');
@@ -29,8 +26,8 @@ app.use(bodyParser.json());
 if (config.common.nodeEnv === 'development') {
   var spec = fs.readFileSync(__dirname + '/api/openapi.yml', 'utf8');
   var swaggerDoc = jsyaml.safeLoad(spec);
-  app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
-  logger.Debug('App', 'Init', `swagger doc is provided on '/doc' endpoint`);
+  app.use('/rest-api-doc', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
+  logger.Debug('App', 'Init', `swagger doc is provided on ${config.server.protocol}://{address}:${config.server.port}/rest-api-doc`);
 }
 
 const rateLimiterConfig = {
@@ -43,6 +40,7 @@ const rateLimiterConfig = {
 if (config.monitor.enable) {
   const metricsMiddleware = promBundle({ includeMethod: true, includePath: true });
   app.use(metricsMiddleware);
+  logger.Info('App', 'Init', `API metrics can be found on: ${config.server.protocol}://{address}:${config.monitor.port}/metrics`);
 }
 app.use(logMiddleware);
 app.use(rateLimiterMiddleware(createRateLimiterMongo(rateLimiterConfig)));
@@ -57,7 +55,7 @@ new OpenApiValidator({
   .then(() => {
     app.use(apiKeyMiddleware(config.server.apikey));
 
-    app.use('/', controllers(db, logger));
+    app.use('/', controllers());
     app.use(errorHandler);
 
     if (config.server.protocol === 'https') {
@@ -85,6 +83,8 @@ new OpenApiValidator({
   .catch((error) => {
     throw error;
   });
+
+module.exports = app;
 
 process
   .on('unhandledRejection', (reason, promise) => {

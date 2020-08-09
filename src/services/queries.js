@@ -1,7 +1,7 @@
 'use strict';
 
 const db = require('./../database');
-const logger = require('./../libs/logger');
+const { logger } = require('./../libs/logger');
 
 /**
  *

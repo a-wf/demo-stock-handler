@@ -1,6 +1,6 @@
 // For a detailed explanation regarding each configuration property, visit:
 // https://jestjs.io/docs/en/configuration.html
-export default {
+module.exports = {
   // All imported modules in your tests should be mocked automatically
   // automock: false,
 
@@ -14,11 +14,10 @@ export default {
   clearMocks: true,
 
   // Indicates whether the coverage information should be collected while executing the test
-  // collectCoverage: false,
+  collectCoverage: true,
 
   // An array of glob patterns indicating a set of files for which coverage information should be collected
-  // collectCoverageFrom: undefined,
-
+  collectCoverageFrom: ['**/src/**/*.{ts,js}', '!**/node_modules/**'],
   // The directory where Jest should output its coverage files
   coverageDirectory: 'coverage',
 
@@ -117,7 +116,7 @@ export default {
   // roots: [
   //   "<rootDir>"
   // ],
-  roots: ['<rootDir>/src'],
+  roots: ['<rootDir>/tests/units'],
   // Allows you to use a custom runner instead of Jest's default test runner
   // runner: "jest-runner",
 
@@ -147,7 +146,7 @@ export default {
   //   "**/__tests__/**/*.[jt]s?(x)",
   //   "**/?(*.)+(spec|test).[tj]s?(x)"
   // ],
-  testMatch: ['**/__tests__/**/*.+(ts|tsx|js)', '**/?(*.)+(spec|test).+(ts|tsx|js)'],
+  testMatch: ['**/(*.)+(spec|test).+(ts|js)']
   // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
   // testPathIgnorePatterns: [
   //   "/node_modules/"
@@ -170,9 +169,9 @@ export default {
 
   // A map from regular expressions to paths to transformers
   // transform: undefined,
-  transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest'
-  }
+  // transform: {
+  //   '^.+\\.(ts|tsx)$': 'ts-jest'
+  // }
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
   // transformIgnorePatterns: [
   //   "/node_modules/"

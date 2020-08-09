@@ -3,7 +3,7 @@
 const Joi = require('@hapi/joi');
 
 const envVarsSchema = Joi.object({
-  NODE_ENV: Joi.string().valid('development', 'production', 'test').required()
+  NODE_ENV: Joi.string().valid('development', 'production', 'staging', 'test').default('development').required()
 })
   .unknown()
   .required();

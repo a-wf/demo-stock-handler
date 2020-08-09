@@ -14,5 +14,6 @@ ENV NODE_ENV "production"
 VOLUME [ "/usr/local/app/src/config", "/var/log" ]
 
 EXPOSE 8080
+EXPOSE 7777
 
 CMD [ "node", "app.js" ]
