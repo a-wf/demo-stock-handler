@@ -42,6 +42,8 @@ There are also secured (by apiKey) public commands to list products, to list wha
 
 This service is packaged in a docker image to easly deploy and test.
 
+Implementation progress can be see in the changelog file, but it is really accurate. (It is mainly for myself: I update version each time I take a break)
+
 For beginning, I used the stack liste below to implement the project:
 
 ```
@@ -58,7 +60,7 @@ Supertest
 
 ```
 
-I want also add features like graphql API (`express-grapql or apollo graphql express middleware`), change`mongo`by`Bookshelf + Knex + ProstgresQL` and if I have time, try to convert code in typescript, create a customized error class, add metric producer for monitoring better.
+I want also add features like graphql API (`express-grapql or apollo-server-express`), change`mongo`by`Bookshelf + Knex + ProstgresQL`, create a customized error class and if I have time, try to convert code in typescript, add metric producer for monitoring better.
 
 ```
 
@@ -234,6 +236,8 @@ The REST design can be see with the openapi.yaml file or by running the api appl
 Note: we cannot use POST commands to increase or decrease already registered/holded product. Have to use PATCH commands.
 
 ### Graphql
+
+The trends (https://www.npmtrends.com/apollo-server-vs-express-graphql-vs-graphql-yoga-vs-prisma-vs-apollo-server-express) suggest to use apollo-server-express. So I chose this module instead of express-graphql (I know it is a very good one too, I used for my personal project and I want to discover new tech).
 
 ## Datamodel Design
 
