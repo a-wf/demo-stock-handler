@@ -6,7 +6,7 @@ const { logger } = require('./../libs/logger');
 /**
  *
  * @typedef {object} accountUserName
- * @property {string} username acount username
+ * @property {string} username account username
  */
 /**
  * add new account to database
@@ -22,6 +22,26 @@ async function addAccount({ username }) {
     if (error.message.includes('E11000 duplicate key')) throw 'username already exists';
     throw error;
   }
+}
+
+/**
+ *
+ * @typedef {object} accountIDUserName
+ * @property {string} accountId account unique id
+ * @property {string} username account username
+ */
+/**
+ * add new account to database
+ * @param {accountIDUserName} {username}
+ * @return {Promise<AccountID>}
+ */
+async function getAccount({ accountId, username }) {
+  const query = {};
+  if (accountId) query._id = accountId;
+  if (username) query.username = username;
+  const result = await db.accounts.findOne(query);
+  if (!result) throw 'Not found account';
+  return { id: result.id, username: result.username };
 }
 
 /**
@@ -115,7 +135,11 @@ async function updateProductStock({ productId, amount }) {
     throw 'Not found product';
   }
 }
-
+/**
+ * @typedef {object} ProductIDName
+ * @property {string} productId
+ * @property {string} name
+ */
 /**
  * @typedef {object} Product
  * @property {string} id
@@ -123,13 +147,17 @@ async function updateProductStock({ productId, amount }) {
  * @property {number} amount
  */
 /**
- * list all products from database
+ * list all products or based on productId or name, from database
+ * @param {ProductIDName} {productId,name}
  * @return {Promise<Array<Product>}
  */
-async function listProducts() {
-  const result = await db.products.find({});
+async function listProducts({ productId, name }) {
+  const query = {};
+  if (productId) query._id = productId;
+  if (name) query.name = name;
+  const result = await db.products.find(query);
+  if (!result.length) throw 'Empty depot or found product';
   logger.Info('Queries', 'listProducts', `available stock: ${JSON.stringify(result)}`);
-
   return result.map(({ id, name, amount }) => ({ id, name, amount }));
 }
 
@@ -197,6 +225,19 @@ async function updateCartAmount({ accountId, productId, amount }) {
   }
 }
 
+async function getProductHolders({ productId, name }) {
+  const query = {};
+  if (productId) query._id = productId;
+  if (name) query.name = name;
+  const found = await db.products.findOne({ query });
+  if (found) {
+    const result = await db.carts.find({ product: found.id }).populate('_account');
+    return result._account;
+  } else {
+    throw 'Not found product';
+  }
+}
+
 /**
  *
  * @typedef {object} AccountIDProductID
@@ -229,12 +270,14 @@ async function moveCart({ accountId, productId }) {
 
 module.exports = {
   addAccount,
+  getAccount,
   removeAccount,
   getAccountHolds,
   addProduct,
   updateProductStock,
   listProducts,
   holdProduct,
+  getProductHolders,
   updateCartAmount,
   moveCart
 };

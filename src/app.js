@@ -1,34 +1,24 @@
 'use strict';
 
 const config = require('./config');
-const fs = require('fs');
-const http = require('http');
-const https = require('https');
-const jsyaml = require('js-yaml');
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const swaggerUi = require('swagger-ui-express');
-const promBundle = require('express-prom-bundle');
 
-const OpenApiValidator = require('express-openapi-validator').OpenApiValidator;
+const fs = require('fs');
+const path = require('path');
+const cors = require('cors');
+const express = require('express');
+const bodyParser = require('body-parser');
+const promBundle = require('express-prom-bundle');
 
 const { logger } = require('./libs/logger');
 const db = require('./database');
-const controllers = require('./controllers');
+
 const { createRateLimiterMongo } = require('./libs/rate-limiter');
 const { rateLimiterMiddleware, logMiddleware, apiKeyMiddleware, errorHandler } = require('./middlewares');
 
 const app = express();
-app.use('*', cors());
-app.use(bodyParser.json());
 
-if (config.common.nodeEnv === 'development') {
-  var spec = fs.readFileSync(__dirname + '/api/openapi.yml', 'utf8');
-  var swaggerDoc = jsyaml.safeLoad(spec);
-  app.use('/rest-api-doc', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
-  logger.Debug('App', 'Init', `swagger doc is provided on ${config.server.protocol}://{address}:${config.server.port}/rest-api-doc`);
-}
+app.use(cors());
+app.use(bodyParser.json());
 
 const rateLimiterConfig = {
   keyPrefix: 'rateLimiterMiddleware',
@@ -45,79 +35,59 @@ if (config.monitor.enable) {
 app.use(logMiddleware);
 app.use(rateLimiterMiddleware(createRateLimiterMongo(rateLimiterConfig)));
 
-let server;
-new OpenApiValidator({
-  apiSpec: __dirname + '/api/openapi.yml',
-  validateRequests: true, // (default)
-  validateResponses: true // false by default
-})
-  .install(app)
-  .then(() => {
-    app.use(apiKeyMiddleware(config.server.apikey));
+app.use(apiKeyMiddleware(config.server.apikey));
 
-    app.use(controllers());
-    app.use(errorHandler);
+if (config.server.apiType === 'rest') {
+  const jsyaml = require('js-yaml');
+  const swaggerUi = require('swagger-ui-express');
+  const { OpenApiValidator } = require('express-openapi-validator');
+  const controllers = require('./api-rest/controllers');
 
-    if (config.common.nodeEnv !== 'test') {
-      if (config.server.protocol === 'https') {
-        var privateKey = fs.readFileSync(config.server.ssl.key, 'utf8');
-        var certificate = fs.readFileSync(config.server.ssl.certificate, 'utf8');
+  const apiDesign = '/api-rest/design/openapi.yml';
 
-        server = https
-          .createServer(
-            {
-              key: privateKey,
-              cert: certificate
-            },
-            app
-          )
-          .listen(config.server.port || 443);
+  if (config.common.nodeEnv === 'development') {
+    var spec = fs.readFileSync(path.join(__dirname, apiDesign), 'utf8');
+    var swaggerDoc = jsyaml.safeLoad(spec);
+    app.use('/rest-api-doc', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
+    logger.Debug('App', 'Init', `swagger doc is provided on ${config.server.protocol}://{address}:${config.server.port}/rest-api-doc`);
+  }
 
-        logger.Info('App', 'Init', `process PID ${process.pid}: listening on port ${config.server.port || 443} via protocol https`);
-      } else if (config.server.protocol === 'http') {
-        server = http.createServer(app).listen(config.server.port || 80);
-        logger.Info('App', 'Init', `process PID ${process.pid}: listening on port ${config.server.port || 80} via protocol http`);
-      } else {
-        throw new Error(`unknown server's protocol`);
-      }
-    }
+  new OpenApiValidator({
+    apiSpec: path.join(__dirname, apiDesign),
+    validateRequests: true, // (default)
+    validateResponses: true // false by default
   })
-  .catch((error) => {
-    throw error;
+    .install(app)
+    .then(() => {
+      app.use(controllers());
+      app.use(errorHandler);
+    })
+    .catch((error) => {
+      throw error;
+    });
+} else if (config.server.apiType === 'graphql') {
+  const basicAuthCheck = require('./libs/basic-auth');
+  const { ApolloServer } = require('apollo-server-express');
+  const schema = require('./api-graphql/schema');
+  // const typeDefs = require('./api-graphql/design/schema-graphql');
+
+  const enableDoc = config.common.nodeEnv === 'development' ? true : false;
+  const apolloConfig = {
+    schema,
+    context: ({ event }) => ({
+      authValidated: basicAuthCheck(event)
+    }),
+    introspection: enableDoc, //these lines are required to use the gui
+    playground: enableDoc //   of playground
+  };
+
+  const apollo = new ApolloServer(apolloConfig);
+  apollo.applyMiddleware({
+    app,
+    path: '/graphql'
   });
+
+  app.use(errorHandler);
+}
 
 module.exports = app;
-
-process
-  .on('unhandledRejection', (reason, promise) => {
-    if (logger) {
-      logger.Error('App', 'unhandledRejection', `${promise}: ${reason}`);
-    } else {
-      // eslint-disable-next-line no-console
-      console.error(reason, 'Unhandled Rejection at Promise', promise);
-    }
-  })
-  .on('uncaughtException', (error) => {
-    if (logger) {
-      logger.Error('App', 'uncaughtException', error.stack);
-    } else {
-      // eslint-disable-next-line no-console
-      console.error(error.message, 'Uncaught Exception thrown');
-    }
-  });
-
-['SIGINT', 'SIGTERM', 'SIGQUIT'].forEach((signal) =>
-  process.on(signal, async () => {
-    if (logger) {
-      logger.Info('App', 'onSIGTERM', `stoping service`);
-    } else {
-      // eslint-disable-next-line no-console
-      console.log('App:', 'onSIGTERM:', `stoping service`);
-    }
-
-    await server.close();
-    logger.Info('App', 'onSIGTERM', `server is stopped`);
-    await db.client.close();
-    process.exit(0);
-  })
-);

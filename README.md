@@ -60,7 +60,7 @@ Supertest
 
 ```
 
-I want also add features like graphql API (`express-grapql or apollo-server-express`), change`mongo`by`Bookshelf + Knex + ProstgresQL`, create a customized error class and if I have time, try to convert code in typescript, add metric producer for monitoring better.
+if I have time, I want also add features like graphql API (`express-grapql or apollo-server-express`), change`mongo`by`Bookshelf + Knex + ProstgresQL`, create a customized error class, try to convert code in typescript and add metric producer for monitoring better.
 
 ```
 
@@ -80,7 +80,7 @@ Supertest
 
 Configuration can be done by declaring environment variables or by editing the dotenv file in `src` folder. Same case for using docker.
 
-Note: this API application can normally be run with only default configuration.
+_Note_: this API application can normally be run with only default configuration.
 
 List of config value:
 
@@ -93,6 +93,8 @@ NODE_ENV=development
 
 
 # Server part
+# type of api (<string>, ['rest', 'graphql'], default: 'http')
+API_TYPE=rest
 # API server port (<string>, default: 'http')
 API_PROTOCOL=http
 
@@ -231,13 +233,27 @@ docker-compose up
 
 ### REST
 
-The REST design can be see with the openapi.yaml file or by running the api application in `NODE_ENV=development` mode, on `/rest-api-doc` endpoint.
+The REST design can be see with the openapi.yaml file or by running the api application in `development` mode, on `/rest-api-doc` endpoint.
 
-Note: we cannot use POST commands to increase or decrease already registered/holded product. Have to use PATCH commands.
+run command: `NODE_ENV="development" API_TYPE="rest" yarn dev"
+
+All commands are secured by apiKey (if provided) and admin commands have additional additional security access basic authentication.
+
+**Note**: we cannot use POST commands to increase or decrease already registered/holded product. Have to use PATCH commands.
 
 ### Graphql
 
 The trends (https://www.npmtrends.com/apollo-server-vs-express-graphql-vs-graphql-yoga-vs-prisma-vs-apollo-server-express) suggest to use apollo-server-express. So I chose this module instead of express-graphql (I know it is a very good one too, I used for my personal project and I want to discover new tech).
+
+The Graphql design can be see in `src/api-graphql` folder or by running the api application in `development` mode, on `/graphql` endpoint.
+
+run command: `NODE_ENV="development" API_TYPE="graphql" yarn dev"
+
+**Note**: this Graphql API is not the mirror of the REST API, It has more commands, for instance for getting user account data.
+
+All commands are secured by apyKey (if provided) and admin commands have additional security access with token.
+
+_Note_: there is a `openapi-to-graphql` module (see https://www.npmjs.com/package/openapi-to-graphql) that can easly convert an openapi doc into a graphql schema and then build api server with `express-graphql`. But it not the purpose of this project.
 
 ## Datamodel Design
 

@@ -72,6 +72,7 @@ describe(`Test 'config loading' code`, () => {
     test('it should contains mandatory fields', () => {
       const { server } = config;
       const expected = {
+        apiType: 'graphql',
         protocol: 'http',
         port: 8080,
         basicAuth: { admin_test: 'admin_test_pwd' },

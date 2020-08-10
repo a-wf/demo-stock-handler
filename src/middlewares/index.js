@@ -1,6 +1,7 @@
 'use strict';
 
 const { logger } = require('./../libs/logger');
+const basicAuthCheck = require('./../libs/basic-auth');
 
 /**
  * retae limiter middleware
@@ -22,7 +23,7 @@ function rateLimiterMiddleware(rateLimiter) {
 
 /**
  * log middleware, to output basic request descritpion
- * @param {objecy} req
+ * @param {object} req
  * @param {object} res
  * @param {Function} next
  */
@@ -42,6 +43,7 @@ function logMiddleware(req, res, next) {
  */
 function apiKeyMiddleware(apiKeyValue) {
   return (req, res, next) => {
+    if (!apiKeyValue) next();
     const apiKey = req.header('X-API-KEY');
     if (apiKey === apiKeyValue) {
       next();
@@ -50,6 +52,16 @@ function apiKeyMiddleware(apiKeyValue) {
     }
   };
 }
+
+// /**
+//  * basic authentication middleware
+//  * @param {object} req
+//  * @param {object} res
+//  * @param {Function} next
+//  */
+// function basicAuth(req, res, next) {
+//  Finally not implemented because express-baisc-auth is more efficient
+// }
 
 /**
  * error handler middleware
