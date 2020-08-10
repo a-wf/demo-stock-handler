@@ -14,6 +14,7 @@ const db = require('./database');
 
 const { createRateLimiterMongo } = require('./libs/rate-limiter');
 const { rateLimiterMiddleware, logMiddleware, apiKeyMiddleware, errorHandler } = require('./middlewares');
+const { error } = require('winston');
 
 const app = express();
 
@@ -49,7 +50,7 @@ if (config.server.apiType === 'rest') {
     var spec = fs.readFileSync(path.join(__dirname, apiDesign), 'utf8');
     var swaggerDoc = jsyaml.safeLoad(spec);
     app.use('/rest-api-doc', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
-    logger.Debug('App', 'Init', `swagger doc is provided on ${config.server.protocol}://{address}:${config.server.port}/rest-api-doc`);
+    logger.Debug('App', 'Init', `OpenApi doc is provided on ${config.server.protocol}://{address}:${config.server.port}/rest-api-doc`);
   }
 
   new OpenApiValidator({
@@ -66,19 +67,35 @@ if (config.server.apiType === 'rest') {
       throw error;
     });
 } else if (config.server.apiType === 'graphql') {
-  const basicAuthCheck = require('./libs/basic-auth');
   const { ApolloServer } = require('apollo-server-express');
+
   const schema = require('./api-graphql/schema');
-  // const typeDefs = require('./api-graphql/design/schema-graphql');
+  const { createToken, validateToken } = require('./libs/token-auth');
 
   const enableDoc = config.common.nodeEnv === 'development' ? true : false;
+
+  createToken({ username: config.server.adminLogin, password: config.server.adminPassword })
+    .then((token) => {
+      logger.Debug('App', 'Init', `Graphql API admin token: 'Bearer ${token}', to provide in 'Authorization' header`); // log it for dev and test
+    })
+    .catch((error) => {
+      logger.Error('App', 'Init', `failed to generate token for Graphql API: ${error.stack}`);
+    });
+
+  if (enableDoc) logger.Debug('App', 'Init', `Graphql API doc is provided on ${config.server.protocol}://{address}:${config.server.port}/graphql`);
+
   const apolloConfig = {
     schema,
-    context: ({ event }) => ({
-      authValidated: basicAuthCheck(event)
-    }),
-    introspection: enableDoc, //these lines are required to use the gui
-    playground: enableDoc //   of playground
+    context: async ({ req }) => {
+      const tokenWithBearer = req.headers.authorization || '';
+      const token = tokenWithBearer.split(' ')[1];
+      let authValidated = false;
+      if (!token) return { authValidated };
+      authValidated = await validateToken({ username: config.server.adminLogin, password: config.server.adminPassword, token });
+      return { authValidated };
+    },
+    introspection: enableDoc, // these lines are required to use the gui
+    playground: enableDoc // of playground
   };
 
   const apollo = new ApolloServer(apolloConfig);
@@ -86,8 +103,6 @@ if (config.server.apiType === 'rest') {
     app,
     path: '/graphql'
   });
-
-  app.use(errorHandler);
 }
 
 module.exports = app;

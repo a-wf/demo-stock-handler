@@ -22,8 +22,8 @@ function doCall(request) {
 }
 
 describe('Integration tests - APP', function () {
-  const authUser = Object.keys(config.server.basicAuth)[0];
-  const authPwd = config.server.basicAuth[authUser];
+  const authUser = config.server.adminLogin;
+  const authPwd = config.server.adminPassword;
   beforeAll(async () => {
     await inMemoryDB.connect();
   });
@@ -46,9 +46,9 @@ describe('Integration tests - APP', function () {
           .expect((res) => {
             expect(res.body).toHaveProperty('request-id');
             expect(res.body['request-id']).toEqual('1234');
-            expect(res.body.data).toHaveProperty('accountId');
-            expect(typeof res.body.data.accountId).toEqual('string');
-            accountId = res.body.data.accountId;
+            expect(res.body.data).toHaveProperty('id');
+            expect(typeof res.body.data.id).toEqual('string');
+            accountId = res.body.data.id;
           });
       });
       it('responds with 400 bad request', async () => {
@@ -90,9 +90,9 @@ describe('Integration tests - APP', function () {
           .expect((res) => {
             expect(res.body).toHaveProperty('request-id');
             expect(res.body['request-id']).toEqual('1234');
-            expect(res.body.data).toHaveProperty('accountId');
-            expect(typeof res.body.data.accountId).toEqual('string');
-            temp = res.body.data.accountId;
+            expect(res.body.data).toHaveProperty('id');
+            expect(typeof res.body.data.id).toEqual('string');
+            temp = res.body.data.id;
           });
 
         await doCall(request(app).delete('/account/' + temp))
@@ -119,9 +119,9 @@ describe('Integration tests - APP', function () {
           .expect((res) => {
             expect(res.body).toHaveProperty('request-id');
             expect(res.body['request-id']).toEqual('1234');
-            expect(res.body.data).toHaveProperty('productId');
-            expect(typeof res.body.data.productId).toEqual('string');
-            productId = res.body.data.productId;
+            expect(res.body.data).toHaveProperty('id');
+            expect(typeof res.body.data.id).toEqual('string');
+            productId = res.body.data.id;
             stockAmount = amount;
           });
 
@@ -133,8 +133,8 @@ describe('Integration tests - APP', function () {
           .expect((res) => {
             expect(res.body).toHaveProperty('request-id');
             expect(res.body['request-id']).toEqual('1234');
-            expect(res.body.data).toHaveProperty('productId');
-            expect(typeof res.body.data.productId).toEqual('string');
+            expect(res.body.data).toHaveProperty('id');
+            expect(typeof res.body.data.id).toEqual('string');
           });
       });
     });

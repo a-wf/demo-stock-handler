@@ -39,7 +39,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/newAccountRes'
+                $ref: '#/components/schemas/newAddedRes'
         401:
           description: Unauthorized
         403:
@@ -126,7 +126,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Response'
+                $ref: '#/components/schemas/newAddedRes'
         401:
           description: Unauthorized
         403:
@@ -450,7 +450,7 @@ components:
         username:
           type: string
           example: Axel
-    newAccountRes:
+    newAddedRes:
       type: object
       required:
         - data
@@ -460,7 +460,7 @@ components:
         data:
           type: object
           required:
-            - accountId
+            - id
           properties:
-            accountId:
+            id:
               type: string

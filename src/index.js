@@ -29,10 +29,10 @@ if (common.nodeEnv !== 'test') {
       )
       .listen(serverConfig.port || 443);
 
-    logger.Info('App', 'Init', `process PID ${process.pid}: listening on port ${serverConfig.port || 443} via protocol https`);
+    logger.Info('Server', 'Init', `process PID ${process.pid}: listening on port ${serverConfig.port || 443} via protocol https`);
   } else if (serverConfig.protocol === 'http') {
     server = http.createServer(app).listen(serverConfig.port || 80);
-    logger.Info('App', 'Init', `process PID ${process.pid}: listening on port ${serverConfig.port || 80} via protocol http`);
+    logger.Info('Server', 'Init', `process PID ${process.pid}: listening on port ${serverConfig.port || 80} via protocol http`);
   } else {
     throw new Error(`unknown server's protocol`);
   }
@@ -41,7 +41,7 @@ if (common.nodeEnv !== 'test') {
 process
   .on('unhandledRejection', (reason, promise) => {
     if (logger) {
-      logger.Error('App', 'unhandledRejection', `${promise}: ${reason}`);
+      logger.Error('Process', 'unhandledRejection', `${promise}: ${reason.stack}`);
     } else {
       // eslint-disable-next-line no-console
       console.error(reason, 'Unhandled Rejection at Promise', promise);
@@ -49,7 +49,7 @@ process
   })
   .on('uncaughtException', (error) => {
     if (logger) {
-      logger.Error('App', 'uncaughtException', error.stack);
+      logger.Error('Process', 'uncaughtException', error.stack);
     } else {
       // eslint-disable-next-line no-console
       console.error(error.message, 'Uncaught Exception thrown');
@@ -59,14 +59,14 @@ process
 ['SIGINT', 'SIGTERM', 'SIGQUIT'].forEach((signal) =>
   process.on(signal, async () => {
     if (logger) {
-      logger.Info('App', 'onSIGTERM', `stoping service`);
+      logger.Info('Process', 'onSIGTERM', `stoping service`);
     } else {
       // eslint-disable-next-line no-console
-      console.log('App:', 'onSIGTERM:', `stoping service`);
+      console.log('Process:', 'onSIGTERM:', `stoping service`);
     }
 
     if (server) await server.close();
-    logger.Info('App', 'onSIGTERM', `server is stopped`);
+    logger.Info('Process', 'onSIGTERM', `server is stopped`);
     if (db) await db.client.close();
     process.exit(0);
   })

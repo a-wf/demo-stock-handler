@@ -75,7 +75,9 @@ describe(`Test 'config loading' code`, () => {
         apiType: 'graphql',
         protocol: 'http',
         port: 8080,
-        basicAuth: { admin_test: 'admin_test_pwd' },
+        adminLogin: 'admin_test',
+        adminPassword: 'admin_test_pwd',
+        token_secret: 'admin-secret',
         apikey: 'apiKey test 123',
         ssl: { key: undefined, cert: undefined }
       };

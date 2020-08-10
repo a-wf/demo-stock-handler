@@ -17,7 +17,7 @@ async function addAccount({ username }) {
   try {
     const result = await db.accounts.create({ username });
     logger.Info('Queries', 'addAccount', `Add new account: ${JSON.stringify(result)}`);
-    return { accountId: result.id };
+    return { id: result.id };
   } catch (error) {
     if (error.message.includes('E11000 duplicate key')) throw 'username already exists';
     throw error;
@@ -47,7 +47,7 @@ async function getAccount({ accountId, username }) {
 /**
  *
  * @typedef {object} AccountID
- * @property {string } accountId account uuid - ObjectId
+ * @property {string } id account uuid - ObjectId
  */
 /**
  * remove account from database
@@ -109,7 +109,7 @@ async function addProduct({ name, amount }) {
   try {
     const result = await db.products.create({ name, amount });
     logger.Info('Queries', 'addProduct', `add new products: ${JSON.stringify(result)}`);
-    return { productId: result.id };
+    return { id: result.id };
   } catch (error) {
     if (error.message.includes('E11000 duplicate key')) throw 'product collection already exists';
     throw error;
@@ -125,12 +125,13 @@ async function addProduct({ name, amount }) {
 /**
  * get list of products holded by account from database
  * @param {ProductIdAndAmount} {productId,amount}
- * @return {Promise<void>}
+ * @return {Promise<Product>}
  */
 async function updateProductStock({ productId, amount }) {
   const found = await db.products.findOneAndUpdate({ _id: productId }, { $inc: { amount } }, { new: true });
   if (found) {
     logger.Info('Queries', 'updateProductStock', `update product stock: ${JSON.stringify(found)}`);
+    return { id: found.id, name: found.name, amount: found.amount };
   } else {
     throw 'Not found product';
   }
@@ -162,15 +163,22 @@ async function listProducts({ productId, name }) {
 }
 
 /**
+ * @typedef {object} CartWithoutID
+ * @property {string} accountId
+ * @property {productId} productId
+ * @property {number} amount
+ */
+/**
  * @typedef {object} Cart
+ * @property {string} id
  * @property {string} accountId
  * @property {productId} productId
  * @property {number} amount
  */
 /**
  * add product to a user cart
- * @param {Cart} {accountId,productId,amount}
- * @return {Promise<void>}
+ * @param {CartWithoutID} {accountId,productId,amount}
+ * @return {Promise<Cart>}
  */
 async function holdProduct({ accountId, productId, amount }) {
   const account = await db.accounts.findById({ _id: accountId }).populate({ path: '_accountCart', match: { product: productId } });
@@ -182,9 +190,10 @@ async function holdProduct({ accountId, productId, amount }) {
         { new: true }
       );
       if (product) {
-        await db.carts.create({ holder: accountId, product: productId, amount });
+        const result = await db.carts.create({ holder: accountId, product: productId, amount });
         logger.Info('Queries', 'holdProduct', `account ${accountId} holds ${amount} products ${productId}`);
         logger.Info('Queries', 'holdProduct', `remaining ${product.amount} products ${productId} in stock`);
+        return { id: result.id, holder: result.holder, product: result.product, amount: result.amount };
       } else {
         throw 'Not found product or product remaining stock is not enough';
       }
@@ -199,7 +208,7 @@ async function holdProduct({ accountId, productId, amount }) {
 /**
  * update quandtity of a product hold by an user by increasing or decreasing an amount
  * @param {Cart} {accountId,productId,amount}
- * @return {Promise<void>}
+ * @return {Promise<Cart>}
  */
 async function updateCartAmount({ accountId, productId, amount }) {
   const account = await db.accounts.findById({ _id: accountId }).populate({ path: '_accountCart', match: { product: productId } });
@@ -214,6 +223,7 @@ async function updateCartAmount({ accountId, productId, amount }) {
         const newData = await db.carts.findOneAndUpdate({ holder: accountId, product: productId }, { $inc: { amount } }, { new: true });
         logger.Info('Queries', 'updateCartAmount', `account ${accountId} holds ${newData.amount} products ${productId}`);
         logger.Info('Queries', 'updateCartAmount', `remaining ${product.amount} products of ${product.name} (${productId}) in stock`);
+        return { id: newData.id, holder: newData.holder, product: newData.product, amount: newData.amount };
       } else {
         throw 'Not found product or product remaining stock is not enough';
       }
@@ -229,10 +239,10 @@ async function getProductHolders({ productId, name }) {
   const query = {};
   if (productId) query._id = productId;
   if (name) query.name = name;
-  const found = await db.products.findOne({ query });
+  const found = await db.products.findOne(query);
   if (found) {
     const result = await db.carts.find({ product: found.id }).populate('_account');
-    return result._account;
+    return result.map((cart) => cart._account[0]);
   } else {
     throw 'Not found product';
   }
@@ -247,6 +257,7 @@ async function getProductHolders({ productId, name }) {
 /**
  * move product out from cart and from stock
  * @param {AccountIDProductID} {accountId,productId}
+ * @return {AccountIDProductID} {accountId,productId}
  */
 async function moveCart({ accountId, productId }) {
   const account = await db.accounts.findById({ _id: accountId });
@@ -257,6 +268,7 @@ async function moveCart({ accountId, productId }) {
       if (cart) {
         await db.carts.deleteOne({ holder: accountId, product: productId });
         logger.Info('Queries', 'holdProduct', `account ${accountId} move out holded products ${product.name} ${productId}`);
+        return { id: cart.id, holder: cart.holder, product: cart.product, amount: 0 };
       } else {
         throw `account ${accountId} doesn't hold those kind of product ${productId}`;
       }
