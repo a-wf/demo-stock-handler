@@ -13,14 +13,17 @@ module.exports.connect = async () => {
 
   const mongooseOpts = {
     useNewUrlParser: true,
-    autoReconnect: true,
-    reconnectTries: Number.MAX_VALUE,
-    reconnectInterval: 1000
+    useFindAndModify: false,
+    // autoReconnect: true,
+    // reconnectTries: Number.MAX_VALUE,
+    useUnifiedTopology: true
+    // reconnectInterval: 1000
   };
 
   await mongoose.connect(uri, mongooseOpts);
 };
 
+module.exports.mongooseClient = mongoose.connection;
 /**
  * Drop database, close the connection and stop mongod.
  */

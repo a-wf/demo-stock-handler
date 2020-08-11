@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
-  title: product-handler
-  description: product handler service
+  title: product-depot-handler
+  description: product depot handler service
   version: 1.0.1
   contact:
     email: alex.w.fan16@gmail.com

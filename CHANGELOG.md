@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- some integration tests (new coverage: )
+- some integration tests (new coverage: 81%)
 
 ## [v1.0.4] - 2020-08-09
 

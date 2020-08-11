@@ -55,29 +55,31 @@ new OpenApiValidator({
   .then(() => {
     app.use(apiKeyMiddleware(config.server.apikey));
 
-    app.use('/', controllers());
+    app.use(controllers());
     app.use(errorHandler);
 
-    if (config.server.protocol === 'https') {
-      var privateKey = fs.readFileSync(config.server.ssl.key, 'utf8');
-      var certificate = fs.readFileSync(config.server.ssl.certificate, 'utf8');
+    if (config.common.nodeEnv !== 'test') {
+      if (config.server.protocol === 'https') {
+        var privateKey = fs.readFileSync(config.server.ssl.key, 'utf8');
+        var certificate = fs.readFileSync(config.server.ssl.certificate, 'utf8');
 
-      server = https
-        .createServer(
-          {
-            key: privateKey,
-            cert: certificate
-          },
-          app
-        )
-        .listen(config.server.port || 443);
+        server = https
+          .createServer(
+            {
+              key: privateKey,
+              cert: certificate
+            },
+            app
+          )
+          .listen(config.server.port || 443);
 
-      logger.Info('App', 'Init', `process PID ${process.pid}: listening on port ${config.server.port || 443} via protocol https`);
-    } else if (config.server.protocol === 'http') {
-      server = http.createServer(app).listen(config.server.port || 80);
-      logger.Info('App', 'Init', `process PID ${process.pid}: listening on port ${config.server.port || 80} via protocol http`);
-    } else {
-      throw new Error(`unknown server's protocol`);
+        logger.Info('App', 'Init', `process PID ${process.pid}: listening on port ${config.server.port || 443} via protocol https`);
+      } else if (config.server.protocol === 'http') {
+        server = http.createServer(app).listen(config.server.port || 80);
+        logger.Info('App', 'Init', `process PID ${process.pid}: listening on port ${config.server.port || 80} via protocol http`);
+      } else {
+        throw new Error(`unknown server's protocol`);
+      }
     }
   })
   .catch((error) => {
