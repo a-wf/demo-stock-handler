@@ -38,7 +38,7 @@ This project presents a backend API server of a products depot.
 
 There are an administrator commands which can add new user accounts, new products, it can also delete account, increase or decrease an amount of products in stock.
 
-There are also secured (by apiKey) public commands to list products, to list what products are holded by an user account, to hold new products, to inscreas and descrease an amount of holded products and to take out from the depot holded products.
+There are also secured (by apiKey) public commands to list products, to list what products are holded by an user account, to hold new products, to inscreas and descrease an amount of holded products and to take out from the depot holded products. If an account is deleted without move out the holded products, products will be returned to the depot stock.
 
 This service is packaged in a docker image to easly deploy and test.
 
@@ -76,6 +76,8 @@ Supertest
 
 ```
 
+And finally, we can discuss about pro and con of features in the next step. (if there is a technical review interview)
+
 ## Configuration
 
 Configuration can be done by declaring environment variables or by editing the dotenv file in `src` folder. Same case for using docker.
@@ -93,7 +95,7 @@ NODE_ENV=development
 
 
 # Server part
-# type of api (<string>, ['rest', 'graphql'], default: 'http')
+# type of api (<string>, ['rest', 'graphql'], default: 'graphql')
 API_TYPE=rest
 # API server port (<string>, default: 'http')
 API_PROTOCOL=http
@@ -242,7 +244,7 @@ run command: `NODE_ENV="development" API_TYPE="rest" yarn dev"
 
 All commands are secured by apiKey (if provided) and admin commands have additional additional security access basic authentication.
 
-**Note**: we cannot use POST commands to increase or decrease already registered/holded product. Have to use PATCH commands.
+**Note**: We cannot use POST commands to increase or decrease already registered/holded product. Have to use PATCH commands.
 
 ### Graphql
 
@@ -254,9 +256,11 @@ run command: `NODE_ENV="development" API_TYPE="graphql" yarn dev"
 
 **Note**: this Graphql API is not the mirror of the REST API, It has more commands, for instance for getting user account data.
 
-All commands are secured by apyKey (if provided) and admin commands have additional security access with token.
+All commands are secured by apyKey (if provided) and admin commands have additional security access with token. The token generation is based on username/password encrypted with `bcrypt` module then transform to a jwt token. the server token will be logged in logger's debug mode.
 
-_Note_: there is a `openapi-to-graphql` module (see https://www.npmjs.com/package/openapi-to-graphql) that can easly convert an openapi doc into a graphql schema and then build api server with `express-graphql`. But it not the purpose of this project.
+_Note_: As I didn't set a expiration time, all tokens base on the same username/password will be considered as valid tokens.
+
+_Note_: There is a `openapi-to-graphql` module (see https://www.npmjs.com/package/openapi-to-graphql) that can easly convert an openapi doc into a graphql schema and then build api server with `express-graphql`. But it not the purpose of this project.
 
 ## Datamodel Design
 
@@ -274,4 +278,10 @@ So for `controllers` and `queries` I just implemente tests for a few functions, 
 
 ### Integration tests
 
-Integration tests are implemented using Supertest. I didn't implement full use-cases tests because of the same reason for unit tests implementation. (Infact, with what I already implemented as integrations tests, full use-cases tests will be _"copy/past"_ of those tests with ordering logic)
+#### REST API
+
+Integration tests are implemented using `Supertest`. I didn't implement full use-cases tests because of the same reason for unit tests implementation. (Infact, with what I already implemented as integrations tests, full use-cases tests will be _"copy/past"_ of those tests with ordering logic)
+
+#### Graphql API
+
+As for REST API, tests are implemented using `Supertest`. As with `Resolvers Chains` feature, Graphql API have more flexibility than REST API, use-cases are almost fully tested.
