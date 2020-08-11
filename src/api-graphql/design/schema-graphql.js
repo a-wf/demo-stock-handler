@@ -3,19 +3,19 @@ const { gql } = require('apollo-server-express');
 module.exports = gql`
   type Account {
     id: ID!
-    username: String!
+    username: String
     getAccountHolds: [Cart]
   }
 
   type Product {
     id: ID!
-    name: String!
-    amount: Int!
+    name: String
+    amount: Int
     getProductHolders: [Account]
   }
 
   type Cart {
-    id: ID!
+    id: ID
     holder: Account!
     product: Product!
     amount: Int!
@@ -28,10 +28,10 @@ module.exports = gql`
   }
 
   type Mutation {
-    addAccount(username: String!): ID
+    addAccount(username: String!): Account
     removeAccount(accountId: ID!): ID
 
-    addProduct(name: String!, amount: Int!): ID
+    addProduct(name: String!, amount: Int!): Product
     updateProductStock(productId: ID!, amount: Int!): Product
 
     holdProduct(accountId: ID!, productId: ID!, amount: Int!): Cart

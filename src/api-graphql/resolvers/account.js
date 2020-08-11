@@ -4,37 +4,111 @@ const queries = require('../../services/queries');
 
 module.exports = {
   Query: {
-    account: (rootValue, args) => {
+    /**
+     * @typedef {object} accountIDNAME
+     * @property {string} accountId unique id
+     * @property {string} username
+     */
+    /**
+     * get account data
+     * @param {any} rootValue
+     * @param {accountIDNAME} args
+     */
+    account: async (rootValue, args) => {
       const { accountId, username } = args;
       if (!accountId) return new UserInputError('Bad parameters');
-      return queries.getAccount({ accountId, username });
+      return await queries.getAccount({ accountId, username });
+    },
+    /**
+     * get account id
+     * @param {AccountID} id
+     * @return {Array<Cart>}
+     */
+    getAccountHolds: async (rootValue, args) => {
+      const { accountId } = args;
+      if (!accountId) return new UserInputError('Bad parameters');
+
+      return await queries.getAccountHolds({ accountId });
     }
   },
   Account: {
+    /**
+     * @typedef {object} AccountID
+     * @property {string} id
+     */
+    /**
+     * get account id
+     * @param {AccountID} parent
+     * @return {string} id
+     */
     id: (parent) => {
       return parent.id;
     },
+    /**
+     * @typedef {object} AccountUsername
+     * @property {string} username
+     */
+    /**
+     * get account id
+     * @param {AccountUsername} username
+     * @return {string} username
+     */
     username: (parent) => {
       return parent.username;
     },
-    getAccountHolds: (parent) => {
-      return queries.getAccountHolds({ accountId: parent.id });
+
+    /**
+     * get account id
+     * @param {AccountID} id
+     * @return {Array<Cart>}
+     */
+    getAccountHolds: async (parent) => {
+      return await queries.getAccountHolds({ accountId: parent.id });
     }
   },
   Mutation: {
-    addAccount: (rootValue, args, context) => {
-      if (!context.authValidated) return new AuthenticationError('must be authenticated as admin');
+    /**
+     * jwt token validation process result
+     * @typedef {object} Context
+     * @property {boolean} authValidated
+     */
+    /**
+     * add new account
+     * @param {any} rootValue
+     * @param {AccountUsername} args
+     * @param {Context} context
+     */
+    addAccount: async (rootValue, args, context) => {
+      const { authValidated } = context;
+      if (authValidated instanceof Error) {
+        return new AuthenticationError(authValidated.message);
+      } else if (!authValidated) {
+        return new AuthenticationError('must be authenticated as admin');
+      }
       const { username } = args;
 
       if (!username) return new UserInputError('Bad parameters');
-      return queries.addAccount({ username });
+      return await queries.addAccount({ username });
     },
-    removeAccount: (rootValue, args, context) => {
-      if (!context.authValidated) return new AuthenticationError('must be authenticated as admin');
+
+    /**
+     * remove an account
+     * @param {any} rootValue
+     * @param {AccountID} args
+     * @param {Context} context
+     */
+    removeAccount: async (rootValue, args, context) => {
+      const { authValidated } = context;
+      if (authValidated instanceof Error) {
+        return new AuthenticationError('authValidated.message;');
+      } else if (!authValidated) {
+        return new AuthenticationError('must be authenticated as admin');
+      }
+
       const { accountId } = args;
 
       if (!accountId) return new UserInputError('Bad parameters');
-      return queries.removeAccount({ accountId });
+      await queries.removeAccount({ accountId });
     }
   }
 };

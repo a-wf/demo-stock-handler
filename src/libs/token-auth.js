@@ -7,7 +7,7 @@ const { server } = require('../config');
 
 async function createToken({ username, password }) {
   const hashedPassword = await bcrypt.hash(password, 10);
-  const credentials = await {
+  const credentials = {
     username,
     password: hashedPassword
   };
@@ -17,12 +17,16 @@ async function createToken({ username, password }) {
 }
 
 async function validateToken({ username, password, token }) {
-  const decoded = jwt.verify(token, server.token_secret);
-  let valid = true;
-  valid = username === decoded.username && valid;
-  valid = (await bcrypt.compare(password, decoded.password)) && valid;
+  try {
+    const decoded = jwt.verify(token, server.token_secret);
+    let valid = true;
+    valid = username === decoded.username && valid;
+    valid = (await bcrypt.compare(password, decoded.password)) && valid;
 
-  return valid;
+    return valid;
+  } catch (error) {
+    return error.message;
+  }
 }
 
 module.exports = { createToken, validateToken };

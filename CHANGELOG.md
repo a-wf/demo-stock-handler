@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.1.1] - 2020-08-11 (day five)
+
+### Test
+
+- new coverage: 82%
+
+### Added
+
+- some integration tests (api-graphql)
+
+### Changed
+
+- APIs implementation become class object
+
 ## [v2.1.0] - 2020-08-10
 
 ### Added
@@ -18,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix bug about graphql playground doc
 - fix bug about schema's type relations
 
-## [v2.0.0] - 2020-08-10
+## [v2.0.0] - 2020-08-10 (day four)
 
 ### Test
 
@@ -42,7 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- some integration tests
+- some integration tests (api-rest)
 
 ## [v1.0.4] - 2020-08-09
 
@@ -54,7 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - some unit tests (coverage: 76%)
 
-## [v1.0.3] - 2020-08-09
+## [v1.0.3] - 2020-08-09 (third day)
 
 ### Added
 
@@ -84,7 +98,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - service logic (/services/queries.js)
 
-## [v0.2.0] - 2020-08-08
+## [v0.2.0] - 2020-08-08 (second day)
 
 ### Added
 
@@ -101,7 +115,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - API design (openapi format)
 - configuration support (with dotenv)
 
-## [Created] - 2020-08-07
+## [Created] - 2020-08-07 (first day)
 
 - eslint support
 - prettier support
