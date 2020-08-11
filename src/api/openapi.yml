@@ -1,0 +1,466 @@
+openapi: 3.0.0
+info:
+  title: product-handler
+  description: product handler service
+  version: 1.0.1
+  contact:
+    email: alex.w.fan16@gmail.com
+tags: []
+paths:
+  /account:
+    post:
+      summary: create account
+      description: 'create an new account'
+      tags:
+        - account
+      security:
+        - basicAuth: []
+      parameters:
+        - name: X-API-KEY
+          in: header
+          description: API KEY
+          required: true
+          schema:
+            type: string
+        - name: X-REQUEST-ID
+          in: header
+          required: false
+          description: Request identifier for debug purpose
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/newAccount'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/newAccountRes'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        500:
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /account/{accountId}:
+    delete:
+      summary: delete account
+      description: 'delete account'
+      tags:
+        - account
+      security:
+        - basicAuth: []
+      parameters:
+        - name: X-API-KEY
+          in: header
+          description: API KEY
+          required: true
+          schema:
+            type: string
+        - name: X-REQUEST-ID
+          in: header
+          required: false
+          description: Request identifier for debug purpose
+          schema:
+            type: string
+        - in: path
+          name: accountId
+          schema:
+            type: string
+          required: true
+          description: Numeric ID of the account to get
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        500:
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /product:
+    post:
+      summary: add new product
+      tags:
+        - product
+      security:
+        - basicAuth: []
+      parameters:
+        - name: X-API-KEY
+          in: header
+          description: API KEY
+          required: true
+          schema:
+            type: string
+        - name: X-REQUEST-ID
+          in: header
+          required: false
+          description: Request identifier for debug purpose
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/product'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        500:
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /product/{productId}:
+    patch:
+      summary: increase or decrease amount of a product
+      tags:
+        - product
+      security:
+        - basicAuth: []
+      parameters:
+        - name: X-API-KEY
+          in: header
+          description: API KEY
+          required: true
+          schema:
+            type: string
+        - name: X-REQUEST-ID
+          in: header
+          required: false
+          description: Request identifier for debug purpose
+          schema:
+            type: string
+        - in: path
+          name: productId
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/productStock'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        500:
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /action/{accountId}/product/{productId}:
+    post:
+      summary: hold a product
+      tags:
+        - action
+      parameters:
+        - name: X-API-KEY
+          in: header
+          description: API KEY
+          required: true
+          schema:
+            type: string
+        - name: X-REQUEST-ID
+          in: header
+          required: false
+          description: Request identifier for debug purpose
+          schema:
+            type: string
+        - in: path
+          name: accountId
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: productId
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/productStock'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        500:
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      summary: update holded product's amount
+      tags:
+        - action
+      parameters:
+        - name: X-API-KEY
+          in: header
+          description: API KEY
+          required: true
+          schema:
+            type: string
+        - name: X-REQUEST-ID
+          in: header
+          required: false
+          description: Request identifier for debug purpose
+          schema:
+            type: string
+        - in: path
+          name: accountId
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: productId
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/productStock'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        500:
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: move holded product out from stock
+      tags:
+        - action
+      parameters:
+        - name: X-API-KEY
+          in: header
+          description: API KEY
+          required: true
+          schema:
+            type: string
+        - name: X-REQUEST-ID
+          in: header
+          required: false
+          description: Request identifier for debug purpose
+          schema:
+            type: string
+        - in: path
+          name: accountId
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: productId
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        500:
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /account/{accountId}/products:
+    get:
+      summary: get account's holded product amount
+      tags:
+        - account
+      parameters:
+        - name: X-API-KEY
+          in: header
+          description: API KEY
+          required: true
+          schema:
+            type: string
+        - name: X-REQUEST-ID
+          in: header
+          required: false
+          description: Request identifier for debug purpose
+          schema:
+            type: string
+        - in: path
+          name: accountId
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/productListRes'
+        500:
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /products:
+    get:
+      summary: list all products
+      tags:
+        - product
+      parameters:
+        - name: X-API-KEY
+          in: header
+          description: API KEY
+          required: true
+          schema:
+            type: string
+        - name: X-REQUEST-ID
+          in: header
+          required: false
+          description: Request identifier for debug purpose
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/productListRes'
+        500:
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+  schemas:
+    Response:
+      type: object
+      properties:
+        request-id:
+          type: string
+    Error:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          format: int32
+        data:
+          type: string
+        request-id:
+          type: string
+      title: Error
+    productStock:
+      type: object
+      required:
+        - amount
+      properties:
+        amount:
+          type: number
+    product:
+      type: object
+      required:
+        - name
+        - amount
+      properties:
+        name:
+          type: string
+        amount:
+          type: number
+    productListRes:
+      type: object
+      required:
+        - data
+      properties:
+        request-id:
+          type: string
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              amount:
+                type: number
+    newAccount:
+      type: object
+      required:
+        - username
+      properties:
+        username:
+          type: string
+          example: Axel
+    newAccountRes:
+      type: object
+      required:
+        - data
+      properties:
+        request-id:
+          type: string
+        data:
+          type: object
+          required:
+            - accountId
+          properties:
+            accountId:
+              type: string

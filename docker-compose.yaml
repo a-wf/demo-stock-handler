@@ -1,0 +1,10 @@
+version: '3'
+services:
+  stock_handler_container:
+    image: docker_stock_handler:1.0.0
+    environment:
+      NODE_ENV: development
+    ports:
+      - '8080:8080'
+    volumes:
+      - /var/log/stock_handler:/var/log
