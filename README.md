@@ -44,15 +44,15 @@ This service is packaged in a docker image to easly deploy and test.
 
 Implementation progress can be see in the changelog file, but it is really accurate. (It is mainly for myself: I update version each time I take a break)
 
-For beginning, I used the stack liste below to implement the project:
+For beginning, I used the stack listed below to implement the project, because I am more familiar with those tech:
 
 ```
 
 Express
 
-Mongoose
+MongoDB (via mongoose)
 
-REST openapi
+REST API
 
 Jest
 
@@ -60,19 +60,21 @@ Supertest
 
 ```
 
-if I have time, I want also add features like graphql API (`express-grapql or apollo-server-express`), change`mongo`by`Bookshelf + Knex + ProstgresQL`, create a customized error class, try to convert code in typescript and add metric producer for monitoring better.
+If I have time, I want also add features like graphql API (`express-graphql or apollo-server-express`), change`MongoDB` by `PostgresQL via`Bookshelf + Knex + ProstgresQL`, create a customized error class, try to convert code in typescript and add metric producer for monitoring better.
 
 ```
 
 Express
 
-Bookshelf+Knex+Postgresql
+Mongoose or Bookshelf+Knex+Pg  (to be able to configure)
 
-Graphql API
+REST API or Graphql API  (to be able to configure)
 
 Jest
 
 Supertest
+
+Typescript
 
 ```
 
@@ -80,9 +82,9 @@ And finally, we can discuss about pro and con of features in the next step. (if 
 
 ## Configuration
 
-Configuration can be done by declaring environment variables or by editing the dotenv file in `src` folder. Same case for using docker.
+Configuration can be done by declaring environment variables or by editing the dotenv file `.env` in `src` folder. Same case for using docker.
 
-_Note_: this API application can normally be run with only default configuration.
+_Note_: Default configuration is normally enough to run this API application.
 
 List of config value:
 
