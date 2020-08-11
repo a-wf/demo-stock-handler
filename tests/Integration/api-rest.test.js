@@ -1,5 +1,6 @@
 'use strict';
 process.env.API_TYPE = 'rest';
+process.env.DATABASE_NAME = 'db_test_restl';
 
 const request = require('supertest');
 
@@ -21,7 +22,7 @@ function doCall(request) {
     .set('X-API-KEY', `${config.server.apikey}`);
 }
 
-describe('Integration tests - APP', function () {
+describe('Integration tests - Rest API', function () {
   const authUser = config.server.adminLogin;
   const authPwd = config.server.adminPassword;
   beforeAll(async () => {
@@ -37,7 +38,7 @@ describe('Integration tests - APP', function () {
     let accountId, productId, stockAmount, holdAmount;
     describe('POST /account', function () {
       it('responds with 200 and request ID', async () => {
-        const username = 'testuser';
+        const username = 'testuser-rest';
         await doCall(request(app).post('/account'))
           .auth(`${authUser}`, `${authPwd}`)
           .set('X-REQUEST-ID', `1234`)
@@ -65,10 +66,11 @@ describe('Integration tests - APP', function () {
           });
       });
 
-      it('responds with 403 forbidden', async () => {
+      it('responds with 401 unauthorized', async () => {
+        const username = 'testuser-rest2';
         await doCall(request(app).post('/account'))
           .set('X-REQUEST-ID', `1234`)
-          .send({})
+          .send({ username })
           .expect(401)
           .expect((res) => {
             expect(res.body).toHaveProperty('request-id');
