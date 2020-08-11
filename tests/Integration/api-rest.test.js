@@ -1,13 +1,14 @@
 'use strict';
+process.env.API_TYPE = 'rest';
 
 const request = require('supertest');
 
-const inMemoryDB = require('./../test-utils/inMemoryMongo');
-let db = require('./../../src/database');
+const inMemoryDB = require('../test-utils/inMemoryMongo');
+let db = require('../../src/database');
 db.client = inMemoryDB.mongooseClient;
 
-const config = require('./../../src/config');
-const app = require('./../../src/app');
+const config = require('../../src/config');
+const app = require('../../src/app');
 
 function doCall(request) {
   return request
@@ -29,7 +30,7 @@ describe('Integration tests - APP', function () {
   afterAll(async () => {
     await inMemoryDB.clearDatabase();
     await inMemoryDB.closeDatabase();
-    app.close();
+    await app.close();
   });
 
   describe('Test requests', function () {
@@ -173,10 +174,10 @@ describe('Integration tests - APP', function () {
       });
     });
 
-    describe('POST /action/:accountId/product/:productId', function () {
+    describe('POST /action/hold?accountId=xxx&productId=xxx', function () {
       it('responds 200', async () => {
         const amount = 80;
-        await doCall(request(app).post(`/action/${accountId}/product/${productId}`))
+        await doCall(request(app).post(`/action/hold?accountId=${accountId}&productId=${productId}`))
           .set('X-REQUEST-ID', `1234`)
           .send({ name: productId, amount })
           .expect(200)
@@ -214,10 +215,10 @@ describe('Integration tests - APP', function () {
       });
     });
 
-    describe('PATCH /action/:accountId/product/:productId', function () {
+    describe('PATCH /action/hold?accountId=xxx&productId=xxx', function () {
       it('responds 200', async () => {
         const amount = -35;
-        await doCall(request(app).patch(`/action/${accountId}/product/${productId}`))
+        await doCall(request(app).patch(`/action/hold?accountId=${accountId}&productId=${productId}`))
           .set('X-REQUEST-ID', `1234`)
           .send({ amount })
           .expect(200)
@@ -252,9 +253,9 @@ describe('Integration tests - APP', function () {
       });
     });
 
-    describe('DELETE /action/:accountId/product/:productId', function () {
+    describe('DELETE /action/hold?accountId=xxx&productId=xxx', function () {
       it('responds with json', async () => {
-        await doCall(request(app).delete(`/action/${accountId}/product/${productId}`))
+        await doCall(request(app).delete(`/action/hold?accountId=${accountId}&productId=${productId}`))
           .set('X-REQUEST-ID', `1234`)
           .expect(200)
           .expect((res) => {

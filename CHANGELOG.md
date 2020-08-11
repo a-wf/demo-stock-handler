@@ -7,7 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [v1.0.5]
+## [v2.0.0] - 2020-08-10
+
+### Added
+
+- Graphql API support
+- apiKey enable/disable feature
+
+### Changed
+
+- REST API replace `/action/{userId}/product/{productId}` endpoints commands by `/action/hold` endpoint commands
+
+## [v1.0.5] - 2020-08-09
 
 ### Added
 
@@ -53,7 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- express server + routes + security middleware
+- express server + routes + security middleware (REST API support + apiKey + basic auth)
 - datamodel design (with mongoose schema)
 - rate-limiter support (with rate-limiter-flexible)
 - logger support (with winston)

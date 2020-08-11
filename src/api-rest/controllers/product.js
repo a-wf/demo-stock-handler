@@ -1,6 +1,6 @@
 'use strict';
 
-const services = require('../services');
+const services = require('../../services');
 const mongoose = require('mongoose');
 
 /**
@@ -48,7 +48,7 @@ async function updateProductStock(req, res, next) {
  */
 async function listProducts(req, res, next) {
   try {
-    const data = await services.queries.listProducts();
+    const data = await services.queries.listProducts({});
     res.status(200).json({ 'request-id': req.header('X-REQUEST-ID'), data });
   } catch (error) {
     next(error);
