@@ -13,18 +13,18 @@ const basicAuthObject = {
   users: { ...server.basicAuth }
 };
 
-function controllers(database, logger) {
-  router.post('/account', basicAuth(basicAuthObject), addAccount(database, logger));
-  router.delete('/account/:accountId', basicAuth(basicAuthObject), removeAccount(database, logger));
-  router.get('/account/:accountId/products', getAccountHolds(database, logger));
+function controllers() {
+  router.post('/account', basicAuth(basicAuthObject), addAccount);
+  router.delete('/account/:accountId', basicAuth(basicAuthObject), removeAccount);
+  router.get('/account/:accountId/products', getAccountHolds);
 
-  router.post('/product', basicAuth(basicAuthObject), addProduct(database, logger));
-  router.patch('/product/:productId', basicAuth(basicAuthObject), updateProductStock(database, logger));
-  router.get('/products', listProducts(database, logger));
+  router.post('/product', basicAuth(basicAuthObject), addProduct);
+  router.patch('/product/:productId', basicAuth(basicAuthObject), updateProductStock);
+  router.get('/products', listProducts);
 
-  router.post('/action/:accountId/product/:productId', holdProduct(database, logger));
-  router.patch('/action/:accountId/product/:productId', updateCartAmount(database, logger));
-  router.delete('/action/:accountId/product/:productId', moveCart(database, logger));
+  router.post('/action/:accountId/product/:productId', holdProduct);
+  router.patch('/action/:accountId/product/:productId', updateCartAmount);
+  router.delete('/action/:accountId/product/:productId', moveCart);
 
   return router;
 }

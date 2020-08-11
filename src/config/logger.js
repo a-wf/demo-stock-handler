@@ -3,7 +3,7 @@
 const Joi = require('@hapi/joi');
 
 const envVarsSchema = Joi.object({
-  LOG_LEVEL: Joi.string().valid('info', 'debug', 'error', 'warning').default('info'),
+  LOG_LEVEL: Joi.string().valid('info', 'debug', 'error', 'warning').default('debug'),
   LOG_FILE: Joi.string().default(`service`),
   LOG_PATH: Joi.string().default(`./logs`),
   LOG_FILE_MAXSIZE: Joi.number().default(1024000),

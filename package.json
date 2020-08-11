@@ -1,18 +1,19 @@
 {
-  "name": "abc-stock-handler",
+  "name": "products-depot-handler",
   "version": "1.0.0",
-  "description": "a stock handler for products a,b and c",
+  "description": "a stock handler for products",
   "main": "app.js",
   "license": "Unlicense",
   "scripts": {
     "lint": "eslint '*/**/*.js' --quiet",
     "lint-fix": "eslint '*/**/*.js' --quiet --fix",
     "prettier-format": "prettier --config .prettierrc 'src/**/*js' --write",
-    "start": "NODE_ENV=production node build/src/app.js",
+    "start": "NODE_ENV=production node src/app.js",
     "dev": "NODE_ENV=development nodemon src/app.js",
-    "test": "jest",
-    "build": "mkdir -p build; ncp src/ build/; cp package.json build/; yarn build-docker",
-    "build-docker": "docker build . -t docker_stock_handler:1.0.0; docker save docker_stock_handler:1.0.0 > docker_stock_handler_1.0.0.img"
+    "test": "jest --coverage",
+    "build": "mkdir -p build; ncp src/ build/; cp package.json build/; yarn build-docker; yarn save-docker",
+    "build-docker": "docker build . -t docker_products_depot_handler:1.0.0",
+    "save-docker": " docker save docker_products_depot_handler:1.0.0 > docker_products_depot_handler_1.0.0.img"
   },
   "husky": {
     "hooks": {
@@ -23,6 +24,9 @@
     "*.js": [
       "eslint --quiet"
     ]
+  },
+  "jest": {
+    "rootDir": "./"
   },
   "dependencies": {
     "@hapi/joi": "17.1.1",
@@ -42,8 +46,10 @@
     "eslint": "7.6.0",
     "eslint-config-prettier": "6.11.0",
     "eslint-plugin-prettier": "3.1.4",
-    "jest": "26.2.2",
+    "jest": "^26.2.2",
+    "mock-require": "^3.0.3",
     "nodemon": "2.0.4",
-    "prettier": "2.0.5"
+    "prettier": "2.0.5",
+    "supertest": "^4.0.2"
   }
 }

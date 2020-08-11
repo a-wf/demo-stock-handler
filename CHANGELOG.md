@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.0.5]
+
+### Added
+
+- some integration tests (new coverage: )
+
+## [v1.0.4] - 2020-08-09
+
+### Added
+
+- some unit tests (coverage: 76%)
+
 ## [v1.0.3] - 2020-08-09
 
 ### Added

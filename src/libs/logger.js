@@ -1,7 +1,7 @@
 'use strict';
 
 var Winston = require('winston');
-const { logger } = require('./../config');
+const { common, logger } = require('./../config');
 
 var logLevels = { error: 0, warn: 1, info: 2, debug: 3 };
 
@@ -31,6 +31,7 @@ class Logger {
       this.Out(this.moduleName, 'Init');
       throw new Error('No config provided');
     }
+    this.config = config;
 
     this.winston = Winston.createLogger({
       exitOnError: true,
@@ -38,7 +39,7 @@ class Logger {
       levels: logLevels,
       transports: [
         new Winston.transports.Console({
-          silent: process.env.NODE_ENV === 'test',
+          silent: common.nodeEnv === 'test',
           format: Winston.format.combine(
             Winston.format.timestamp({
               format: 'YYYY-MM-DD HH:mm:ss'
@@ -48,7 +49,7 @@ class Logger {
           )
         }),
         new Winston.transports.File({
-          silent: process.env.NODE_ENV === 'test',
+          silent: common.nodeEnv === 'test',
           filename: config.file.path + '/' + config.file.name + '.log',
           maxsize: config.file.maxSize,
           maxFiles: config.file.maxFiles,
@@ -154,4 +155,7 @@ class Logger {
   }
 }
 
-module.exports = new Logger(logger);
+module.exports = {
+  Logger: Logger,
+  logger: new Logger(logger)
+};

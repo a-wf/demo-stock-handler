@@ -3,7 +3,7 @@
 const Joi = require('@hapi/joi');
 
 const envVarsSchema = Joi.object({
-  MONITOR_ENABLE: Joi.boolean().default('true'),
+  MONITOR_ENABLE: Joi.boolean().default(true),
   MONITOR_PORT: Joi.number().default(7777)
 })
   .unknown()
