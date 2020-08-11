@@ -7,7 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.1.0] - 2020-08-10
+
+### Added
+
+- Graphql API Admin commands secured by Authorization bearer token
+
+### Fixed
+
+- fix bug about graphql playground doc
+- fix bug about schema's type relations
+
 ## [v2.0.0] - 2020-08-10
+
+### Test
+
+- new coverage: 76%
 
 ### Added
 
@@ -17,14 +32,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - REST API replace `/action/{userId}/product/{productId}` endpoints commands by `/action/hold` endpoint commands
+- Services/queries functions updated
 
 ## [v1.0.5] - 2020-08-09
 
+### Test
+
+- new coverage: 81%
+
 ### Added
 
-- some integration tests (new coverage: 81%)
+- some integration tests
 
 ## [v1.0.4] - 2020-08-09
+
+### Test
+
+- new coverage: 76%
 
 ### Added
 

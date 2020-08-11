@@ -107,6 +107,9 @@ API_ADMIN_LOGIN=admin
 # basic authentication password (<string>, default: 'admin')
 API_ADMIN_PASSWORD=admin
 
+#  jtw token secret, usable only if graphql api is enabled (<string>, default: 'admin-sercret')
+API_GRAPHQL_ADMIN_TOKEN_SECRET="admin-secret"
+
 # apiKey value (<string>, default: 'apikey ABCD')
 API_APIKEY_VALUE="apikey ABCD"
 

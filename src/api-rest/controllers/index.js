@@ -8,9 +8,12 @@ const router = express.Router();
 const { addAccount, removeAccount, getAccountHolds } = require('./account');
 const { addProduct, updateProductStock, listProducts } = require('./product');
 const { holdProduct, updateCartAmount, moveCart } = require('./action');
+const { adminPassword } = require('../../config/server');
 
 const basicAuthObject = {
-  users: { ...server.basicAuth }
+  users: {
+    [`${server.adminLogin}`]: adminPassword
+  }
 };
 
 function controllers() {

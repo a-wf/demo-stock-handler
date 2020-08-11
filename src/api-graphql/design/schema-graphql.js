@@ -4,7 +4,7 @@ module.exports = gql`
   type Account {
     id: ID!
     username: String!
-    getAccountHolds: [Product]
+    getAccountHolds: [Cart]
   }
 
   type Product {
@@ -24,18 +24,18 @@ module.exports = gql`
   type Query {
     account(accountId: ID!, username: String): Account
     products(productId: ID, name: String): [Product]
-    getAccountHolds(cartId: ID, productId: ID, accountId: ID!): [Cart]
+    getAccountHolds(accountId: ID!): [Cart]
   }
 
   type Mutation {
-    addAccount(username: String!): Account
-    removeAccount(accountId: ID!): Account
+    addAccount(username: String!): ID
+    removeAccount(accountId: ID!): ID
 
-    addProduct(name: String!, amount: Int!): Product
+    addProduct(name: String!, amount: Int!): ID
     updateProductStock(productId: ID!, amount: Int!): Product
 
     holdProduct(accountId: ID!, productId: ID!, amount: Int!): Cart
     updateCartAmount(accountId: ID!, productId: ID!, amount: Int!): Cart
-    moveCart(accountId: ID!, productId: ID!, username: String, product: String): Cart
+    moveCart(accountId: ID!, productId: ID!): Cart
   }
 `;

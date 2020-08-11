@@ -30,7 +30,7 @@ module.exports = {
       const { name, amount } = args;
 
       if (!name || !amount) return new UserInputError('Bad parameters');
-      return queries.addProductd({ name, amount });
+      return queries.addProduct({ name, amount });
     },
     updateProductStock: (rootValue, args, context) => {
       if (!context.authValidated) return new AuthenticationError('must be authenticated as admin');

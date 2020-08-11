@@ -1,7 +1,6 @@
 'use strict';
 
 const { logger } = require('./../libs/logger');
-const basicAuthCheck = require('./../libs/basic-auth');
 
 /**
  * retae limiter middleware
@@ -28,11 +27,12 @@ function rateLimiterMiddleware(rateLimiter) {
  * @param {Function} next
  */
 function logMiddleware(req, res, next) {
-  logger.Info(
-    'App',
-    'api',
-    `${req.method} ${req.originalUrl} params=${JSON.stringify(req.params)} query=${JSON.stringify(req.query)} body=${JSON.stringify(req.body)}`
-  );
+  if (req.body.operationName !== 'IntrospectionQuery')
+    logger.Info(
+      'App',
+      'api',
+      `${req.method} ${req.originalUrl} params=${JSON.stringify(req.params)} query=${JSON.stringify(req.query)} body=${JSON.stringify(req.body)}`
+    );
   next();
 }
 
@@ -43,25 +43,18 @@ function logMiddleware(req, res, next) {
  */
 function apiKeyMiddleware(apiKeyValue) {
   return (req, res, next) => {
-    if (!apiKeyValue) next();
-    const apiKey = req.header('X-API-KEY');
-    if (apiKey === apiKeyValue) {
+    if (!apiKeyValue) {
       next();
     } else {
-      res.status(401).send('Unauthorized');
+      const apiKey = req.header('X-API-KEY');
+      if (apiKey === apiKeyValue) {
+        next();
+      } else {
+        res.status(401).send('Unauthorized');
+      }
     }
   };
 }
-
-// /**
-//  * basic authentication middleware
-//  * @param {object} req
-//  * @param {object} res
-//  * @param {Function} next
-//  */
-// function basicAuth(req, res, next) {
-//  Finally not implemented because express-baisc-auth is more efficient
-// }
 
 /**
  * error handler middleware

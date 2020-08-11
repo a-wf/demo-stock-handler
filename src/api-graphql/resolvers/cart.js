@@ -11,28 +11,29 @@ module.exports = {
     amount: (parent) => {
       return parent.amount;
     },
-    holder: (parent) => {
-      return parent.holder;
+    holder: async (parent) => {
+      return await queries.getAccount({ accountId: parent.holder });
     },
-    product: (parent) => {
-      return parent.product;
+    product: async (parent) => {
+      const result = await queries.listProducts({ productId: parent.product });
+      return result.find((product) => product.id === parent.product);
     }
   },
   Mutation: {
-    holdProduct: (rootValue, args) => {
+    holdProduct: async (rootValue, args) => {
       const { accountId, productId, amount } = args;
       if (!accountId || !productId || !amount) return new UserInputError('Bad parameters');
-      return queries.holdProduct({ accountId, productId, amount });
+      return await queries.holdProduct({ accountId, productId, amount });
     },
-    updateCartAmount: (rootValue, args) => {
+    updateCartAmount: async (rootValue, args) => {
       const { accountId, productId, amount } = args;
       if (!accountId || !productId || !amount) return new UserInputError('Bad parameters');
-      return queries.updateCartAmount({ accountId, productId, amount });
+      return await queries.updateCartAmount({ accountId, productId, amount });
     },
-    moveCart: (rootValue, args) => {
+    moveCart: async (rootValue, args) => {
       const { accountId, productId } = args;
       if (!accountId || !productId) return new UserInputError('Bad parameters');
-      return queries.updateCartAmount({ accountId, productId });
+      return await queries.moveCart({ accountId, productId });
     }
   }
 };
