@@ -1,0 +1,5 @@
+
+- integration test
+- graphql
+- customized error classe or error schema or list of error code 
+- bookshelf+knex
