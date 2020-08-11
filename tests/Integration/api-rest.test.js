@@ -1,13 +1,15 @@
 'use strict';
+process.env.API_TYPE = 'rest';
+process.env.DATABASE_NAME = 'db_test_restl';
 
 const request = require('supertest');
 
-const inMemoryDB = require('./../test-utils/inMemoryMongo');
-let db = require('./../../src/database');
+const inMemoryDB = require('../test-utils/inMemoryMongo');
+let db = require('../../src/database');
 db.client = inMemoryDB.mongooseClient;
 
-const config = require('./../../src/config');
-const app = require('./../../src/app');
+const config = require('../../src/config');
+const app = require('../../src/app');
 
 function doCall(request) {
   return request
@@ -20,23 +22,23 @@ function doCall(request) {
     .set('X-API-KEY', `${config.server.apikey}`);
 }
 
-describe('Integration tests - APP', function () {
-  const authUser = Object.keys(config.server.basicAuth)[0];
-  const authPwd = config.server.basicAuth[authUser];
+describe('Integration tests - Rest API', function () {
+  const authUser = config.server.adminLogin;
+  const authPwd = config.server.adminPassword;
   beforeAll(async () => {
     await inMemoryDB.connect();
   });
   afterAll(async () => {
     await inMemoryDB.clearDatabase();
     await inMemoryDB.closeDatabase();
-    app.close();
+    await app.close();
   });
 
   describe('Test requests', function () {
     let accountId, productId, stockAmount, holdAmount;
     describe('POST /account', function () {
       it('responds with 200 and request ID', async () => {
-        const username = 'testuser';
+        const username = 'testuser-rest';
         await doCall(request(app).post('/account'))
           .auth(`${authUser}`, `${authPwd}`)
           .set('X-REQUEST-ID', `1234`)
@@ -45,9 +47,9 @@ describe('Integration tests - APP', function () {
           .expect((res) => {
             expect(res.body).toHaveProperty('request-id');
             expect(res.body['request-id']).toEqual('1234');
-            expect(res.body.data).toHaveProperty('accountId');
-            expect(typeof res.body.data.accountId).toEqual('string');
-            accountId = res.body.data.accountId;
+            expect(res.body.data).toHaveProperty('id');
+            expect(typeof res.body.data.id).toEqual('string');
+            accountId = res.body.data.id;
           });
       });
       it('responds with 400 bad request', async () => {
@@ -64,10 +66,11 @@ describe('Integration tests - APP', function () {
           });
       });
 
-      it('responds with 403 forbidden', async () => {
+      it('responds with 401 unauthorized', async () => {
+        const username = 'testuser-rest2';
         await doCall(request(app).post('/account'))
           .set('X-REQUEST-ID', `1234`)
-          .send({})
+          .send({ username })
           .expect(401)
           .expect((res) => {
             expect(res.body).toHaveProperty('request-id');
@@ -89,9 +92,9 @@ describe('Integration tests - APP', function () {
           .expect((res) => {
             expect(res.body).toHaveProperty('request-id');
             expect(res.body['request-id']).toEqual('1234');
-            expect(res.body.data).toHaveProperty('accountId');
-            expect(typeof res.body.data.accountId).toEqual('string');
-            temp = res.body.data.accountId;
+            expect(res.body.data).toHaveProperty('id');
+            expect(typeof res.body.data.id).toEqual('string');
+            temp = res.body.data.id;
           });
 
         await doCall(request(app).delete('/account/' + temp))
@@ -118,9 +121,9 @@ describe('Integration tests - APP', function () {
           .expect((res) => {
             expect(res.body).toHaveProperty('request-id');
             expect(res.body['request-id']).toEqual('1234');
-            expect(res.body.data).toHaveProperty('productId');
-            expect(typeof res.body.data.productId).toEqual('string');
-            productId = res.body.data.productId;
+            expect(res.body.data).toHaveProperty('id');
+            expect(typeof res.body.data.id).toEqual('string');
+            productId = res.body.data.id;
             stockAmount = amount;
           });
 
@@ -132,8 +135,8 @@ describe('Integration tests - APP', function () {
           .expect((res) => {
             expect(res.body).toHaveProperty('request-id');
             expect(res.body['request-id']).toEqual('1234');
-            expect(res.body.data).toHaveProperty('productId');
-            expect(typeof res.body.data.productId).toEqual('string');
+            expect(res.body.data).toHaveProperty('id');
+            expect(typeof res.body.data.id).toEqual('string');
           });
       });
     });
@@ -173,10 +176,10 @@ describe('Integration tests - APP', function () {
       });
     });
 
-    describe('POST /action/:accountId/product/:productId', function () {
+    describe('POST /action/hold?accountId=xxx&productId=xxx', function () {
       it('responds 200', async () => {
         const amount = 80;
-        await doCall(request(app).post(`/action/${accountId}/product/${productId}`))
+        await doCall(request(app).post(`/action/hold?accountId=${accountId}&productId=${productId}`))
           .set('X-REQUEST-ID', `1234`)
           .send({ name: productId, amount })
           .expect(200)
@@ -214,10 +217,10 @@ describe('Integration tests - APP', function () {
       });
     });
 
-    describe('PATCH /action/:accountId/product/:productId', function () {
+    describe('PATCH /action/hold?accountId=xxx&productId=xxx', function () {
       it('responds 200', async () => {
         const amount = -35;
-        await doCall(request(app).patch(`/action/${accountId}/product/${productId}`))
+        await doCall(request(app).patch(`/action/hold?accountId=${accountId}&productId=${productId}`))
           .set('X-REQUEST-ID', `1234`)
           .send({ amount })
           .expect(200)
@@ -252,9 +255,9 @@ describe('Integration tests - APP', function () {
       });
     });
 
-    describe('DELETE /action/:accountId/product/:productId', function () {
+    describe('DELETE /action/hold?accountId=xxx&productId=xxx', function () {
       it('responds with json', async () => {
-        await doCall(request(app).delete(`/action/${accountId}/product/${productId}`))
+        await doCall(request(app).delete(`/action/hold?accountId=${accountId}&productId=${productId}`))
           .set('X-REQUEST-ID', `1234`)
           .expect(200)
           .expect((res) => {

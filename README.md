@@ -38,7 +38,7 @@ This project presents a backend API server of a products depot.
 
 There are an administrator commands which can add new user accounts, new products, it can also delete account, increase or decrease an amount of products in stock.
 
-There are also secured (by apiKey) public commands to list products, to list what products are holded by an user account, to hold new products, to inscreas and descrease an amount of holded products and to take out from the depot holded products.
+There are also secured (by apiKey) public commands to list products, to list what products are holded by an user account, to hold new products, to inscreas and descrease an amount of holded products and to take out from the depot holded products. If an account is deleted without move out the holded products, products will be returned to the depot stock.
 
 This service is packaged in a docker image to easly deploy and test.
 
@@ -60,7 +60,7 @@ Supertest
 
 ```
 
-I want also add features like graphql API (`express-grapql or apollo-server-express`), change`mongo`by`Bookshelf + Knex + ProstgresQL`, create a customized error class and if I have time, try to convert code in typescript, add metric producer for monitoring better.
+if I have time, I want also add features like graphql API (`express-grapql or apollo-server-express`), change`mongo`by`Bookshelf + Knex + ProstgresQL`, create a customized error class, try to convert code in typescript and add metric producer for monitoring better.
 
 ```
 
@@ -76,11 +76,13 @@ Supertest
 
 ```
 
+And finally, we can discuss about pro and con of features in the next step. (if there is a technical review interview)
+
 ## Configuration
 
 Configuration can be done by declaring environment variables or by editing the dotenv file in `src` folder. Same case for using docker.
 
-Note: this API application can normally be run with only default configuration.
+_Note_: this API application can normally be run with only default configuration.
 
 List of config value:
 
@@ -93,6 +95,8 @@ NODE_ENV=development
 
 
 # Server part
+# type of api (<string>, ['rest', 'graphql'], default: 'graphql')
+API_TYPE=rest
 # API server port (<string>, default: 'http')
 API_PROTOCOL=http
 
@@ -104,6 +108,9 @@ API_ADMIN_LOGIN=admin
 
 # basic authentication password (<string>, default: 'admin')
 API_ADMIN_PASSWORD=admin
+
+#  jtw token secret, usable only if graphql api is enabled (<string>, default: 'admin-sercret')
+API_GRAPHQL_ADMIN_TOKEN_SECRET="admin-secret"
 
 # apiKey value (<string>, default: 'apikey ABCD')
 API_APIKEY_VALUE="apikey ABCD"
@@ -231,13 +238,29 @@ docker-compose up
 
 ### REST
 
-The REST design can be see with the openapi.yaml file or by running the api application in `NODE_ENV=development` mode, on `/rest-api-doc` endpoint.
+The REST design can be see with the openapi.yaml file or by running the api application in `development` mode, on `/rest-api-doc` endpoint.
 
-Note: we cannot use POST commands to increase or decrease already registered/holded product. Have to use PATCH commands.
+run command: `NODE_ENV="development" API_TYPE="rest" yarn dev"
+
+All commands are secured by apiKey (if provided) and admin commands have additional additional security access basic authentication.
+
+**Note**: We cannot use POST commands to increase or decrease already registered/holded product. Have to use PATCH commands.
 
 ### Graphql
 
 The trends (https://www.npmtrends.com/apollo-server-vs-express-graphql-vs-graphql-yoga-vs-prisma-vs-apollo-server-express) suggest to use apollo-server-express. So I chose this module instead of express-graphql (I know it is a very good one too, I used for my personal project and I want to discover new tech).
+
+The Graphql design can be see in `src/api-graphql` folder or by running the api application in `development` mode, on `/graphql` endpoint.
+
+run command: `NODE_ENV="development" API_TYPE="graphql" yarn dev"
+
+**Note**: this Graphql API is not the mirror of the REST API, It has more commands, for instance for getting user account data.
+
+All commands are secured by apyKey (if provided) and admin commands have additional security access with token. The token generation is based on username/password encrypted with `bcrypt` module then transform to a jwt token. the server token will be logged in logger's debug mode.
+
+_Note_: As I didn't set a expiration time, all tokens base on the same username/password will be considered as valid tokens.
+
+_Note_: There is a `openapi-to-graphql` module (see https://www.npmjs.com/package/openapi-to-graphql) that can easly convert an openapi doc into a graphql schema and then build api server with `express-graphql`. But it not the purpose of this project.
 
 ## Datamodel Design
 
@@ -255,4 +278,10 @@ So for `controllers` and `queries` I just implemente tests for a few functions, 
 
 ### Integration tests
 
-Integration tests are implemented using Supertest. I didn't implement full use-cases tests because of the same reason for unit tests implementation. (Infact, with what I already implemented as integrations tests, full use-cases tests will be _"copy/past"_ of those tests with ordering logic)
+#### REST API
+
+Integration tests are implemented using `Supertest`. I didn't implement full use-cases tests because of the same reason for unit tests implementation. (Infact, with what I already implemented as integrations tests, full use-cases tests will be _"copy/past"_ of those tests with ordering logic)
+
+#### Graphql API
+
+As for REST API, tests are implemented using `Supertest`. As with `Resolvers Chains` feature, Graphql API have more flexibility than REST API, use-cases are almost fully tested.

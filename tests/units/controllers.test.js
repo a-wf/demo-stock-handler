@@ -1,7 +1,7 @@
 'use strict';
 
 jest.mock('./../../src/services/queries');
-const accountControllers = require('../../src/controllers/account');
+const accountControllers = require('../../src/api-rest/controllers/account');
 const queries = require('../../src/services/queries');
 
 describe(`Test 'controllers'`, () => {

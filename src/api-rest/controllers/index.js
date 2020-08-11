@@ -2,15 +2,18 @@
 
 const express = require('express');
 const basicAuth = require('express-basic-auth');
-const { server } = require('./../config');
+const { server } = require('./../../config');
 const router = express.Router();
 
 const { addAccount, removeAccount, getAccountHolds } = require('./account');
 const { addProduct, updateProductStock, listProducts } = require('./product');
 const { holdProduct, updateCartAmount, moveCart } = require('./action');
+const { adminPassword } = require('../../config/server');
 
 const basicAuthObject = {
-  users: { ...server.basicAuth }
+  users: {
+    [`${server.adminLogin}`]: adminPassword
+  }
 };
 
 function controllers() {
@@ -22,9 +25,9 @@ function controllers() {
   router.patch('/product/:productId', basicAuth(basicAuthObject), updateProductStock);
   router.get('/products', listProducts);
 
-  router.post('/action/:accountId/product/:productId', holdProduct);
-  router.patch('/action/:accountId/product/:productId', updateCartAmount);
-  router.delete('/action/:accountId/product/:productId', moveCart);
+  router.post('/action/hold', holdProduct);
+  router.patch('/action/hold', updateCartAmount);
+  router.delete('/action/hold', moveCart);
 
   return router;
 }

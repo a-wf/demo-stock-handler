@@ -39,7 +39,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/newAccountRes'
+                $ref: '#/components/schemas/newAddedRes'
         401:
           description: Unauthorized
         403:
@@ -126,7 +126,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Response'
+                $ref: '#/components/schemas/newAddedRes'
         401:
           description: Unauthorized
         403:
@@ -185,7 +185,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /action/{accountId}/product/{productId}:
+  /action/hold:
     post:
       summary: hold a product
       tags:
@@ -203,12 +203,12 @@ paths:
           description: Request identifier for debug purpose
           schema:
             type: string
-        - in: path
+        - in: query
           name: accountId
           schema:
             type: string
           required: true
-        - in: path
+        - in: query
           name: productId
           schema:
             type: string
@@ -232,7 +232,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
     patch:
-      summary: update holded product's amount
+      summary: increase or decrease for taking more or releasing an amount of product
       tags:
         - action
       parameters:
@@ -248,12 +248,12 @@ paths:
           description: Request identifier for debug purpose
           schema:
             type: string
-        - in: path
+        - in: query
           name: accountId
           schema:
             type: string
           required: true
-        - in: path
+        - in: query
           name: productId
           schema:
             type: string
@@ -277,7 +277,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
     delete:
-      summary: move holded product out from stock
+      summary: move holded product out from depot
       tags:
         - action
       parameters:
@@ -293,12 +293,12 @@ paths:
           description: Request identifier for debug purpose
           schema:
             type: string
-        - in: path
+        - in: query
           name: accountId
           schema:
             type: string
           required: true
-        - in: path
+        - in: query
           name: productId
           schema:
             type: string
@@ -450,7 +450,7 @@ components:
         username:
           type: string
           example: Axel
-    newAccountRes:
+    newAddedRes:
       type: object
       required:
         - data
@@ -460,7 +460,7 @@ components:
         data:
           type: object
           required:
-            - accountId
+            - id
           properties:
-            accountId:
+            id:
               type: string

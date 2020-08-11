@@ -26,7 +26,7 @@ describe(`Test 'Sevices:queries'`, () => {
       expect(db.accounts.create.mock.calls.length).toBe(1);
       expect(spyOnLogInfo.mock.calls.length).toBe(1);
       expect(db.accounts.create.mock.calls[0][0]).toMatchObject({ username });
-      expect(data).toMatchObject({ accountId });
+      expect(data).toMatchObject({ id: accountId });
     });
 
     test('shoudl throw error', async () => {

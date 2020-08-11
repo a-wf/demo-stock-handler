@@ -22,16 +22,17 @@ function rateLimiterMiddleware(rateLimiter) {
 
 /**
  * log middleware, to output basic request descritpion
- * @param {objecy} req
+ * @param {object} req
  * @param {object} res
  * @param {Function} next
  */
 function logMiddleware(req, res, next) {
-  logger.Info(
-    'App',
-    'api',
-    `${req.method} ${req.originalUrl} params=${JSON.stringify(req.params)} query=${JSON.stringify(req.query)} body=${JSON.stringify(req.body)}`
-  );
+  if (req.body.operationName !== 'IntrospectionQuery')
+    logger.Info(
+      'App',
+      'api',
+      `${req.method} ${req.originalUrl} params=${JSON.stringify(req.params)} query=${JSON.stringify(req.query)} body=${JSON.stringify(req.body)}`
+    );
   next();
 }
 
@@ -42,11 +43,15 @@ function logMiddleware(req, res, next) {
  */
 function apiKeyMiddleware(apiKeyValue) {
   return (req, res, next) => {
-    const apiKey = req.header('X-API-KEY');
-    if (apiKey === apiKeyValue) {
+    if (!apiKeyValue) {
       next();
     } else {
-      res.status(401).send('Unauthorized');
+      const apiKey = req.header('X-API-KEY');
+      if (apiKey === apiKeyValue) {
+        next();
+      } else {
+        res.status(401).send('Unauthorized');
+      }
     }
   };
 }
