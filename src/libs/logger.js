@@ -1,6 +1,6 @@
 'use strict';
 
-var Winston = require('winston');
+const Winston = require('winston');
 const { common, logger } = require('./../config');
 
 var logLevels = { error: 0, warn: 1, info: 2, debug: 3 };

@@ -40,7 +40,8 @@ There are an administrator commands which can add new user accounts, new product
 
 There are also secured (by apiKey) public commands to list products, to list what products are holded by an user account, to hold new products, to inscreas and descrease an amount of holded products and to take out from the depot holded products. If an account is deleted without move out the holded products, products will be returned to the depot stock.
 
-This service is packaged in a docker image to easly deploy and test.
+This service is implemented with Node standard syntax (instead of ESM syntax) because I am using Node.js v12 on my laptop, and ESM is only an experimental module.
+The code is packaged in a docker image to easly deploy and test.
 
 Implementation progress can be see in the changelog file, but it is really accurate. (It is mainly for myself: I update version each time I take a break)
 
@@ -73,8 +74,6 @@ REST API or Graphql API  (to be able to configure)
 Jest
 
 Supertest
-
-Typescript
 
 ```
 
