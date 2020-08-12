@@ -8,7 +8,7 @@ const { logger } = require('./../libs/logger');
  * @return {Function} rate limiter middleware, (req, res, next) => {}
  */
 function rateLimiterMiddleware(rateLimiter) {
-  return (req, res, next) => {
+  return async (req, res, next) => {
     rateLimiter
       .consume(req.ip)
       .then(() => {

@@ -16,7 +16,7 @@ module.exports = {
     },
     product: async parent => {
       const result = await queries.listProducts({ productId: parent.product });
-      return result.find(product => product.id === parent.product);
+      return result.find(product => product.id.toString() === parent.product.toString());
     }
   },
   Mutation: {

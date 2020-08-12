@@ -1,6 +1,7 @@
 'use strict';
 
 const db = require('./../../database');
+const mongoose = require('mongoose');
 
 /**
  * @typedef {object} AccountID
@@ -31,6 +32,7 @@ async function addAccount({ username }) {
  * @return {Promise<accountIDUserName>}
  */
 async function findAccount({ id, username }) {
+  if (!mongoose.Types.ObjectId.isValid(id)) throw 'Invalid account id';
   const query = {};
   if (id) query._id = id;
   if (username) query.username = username;
@@ -71,6 +73,7 @@ async function deleteCartsByHolder({ holder }) {
  * @return {Promise<Product>}
  */
 async function findProductByIdAndUpdateAmount({ id, amount }) {
+  if (!mongoose.Types.ObjectId.isValid(id)) throw 'Invalid product id';
   return await db.products.findByIdAndUpdate({ _id: id }, { $inc: { amount } }, { new: true });
 }
 
@@ -80,6 +83,8 @@ async function findProductByIdAndUpdateAmount({ id, amount }) {
  * @return {Promise<boolean>}
  */
 async function removeAccountById({ id }) {
+  if (!mongoose.Types.ObjectId.isValid(id)) throw 'Invalid account id';
+
   const result = await db.accounts.deleteOne({ _id: id });
   return !!result.deletedCount;
 }
@@ -95,8 +100,10 @@ async function removeAccountById({ id }) {
  * @return {Promise<Array<ProductIdAndAmount>>}
  */
 async function findAllCartsByHolder({ holder }) {
+  if (!mongoose.Types.ObjectId.isValid(holder)) throw 'Invalid account id';
+
   const result = await db.carts.find({ holder });
-  return result ? result.map(({ product, amount }) => ({ product, amount })) : null;
+  return result ? result.map(({ holder, product, amount }) => ({ holder, product, amount })) : null;
 }
 
 /**
@@ -175,6 +182,7 @@ async function findAllProducts({ id, name }) {
  * @param {holderAndProductIDs}  { accountId, productId }
  */
 async function checkProductIfHoldByAccountId({ accountId, productId }) {
+  if (!mongoose.Types.ObjectId.isValid(accountId) || !mongoose.Types.ObjectId.isValid(productId)) throw 'Invalid id';
   const account = await db.accounts.findById({ _id: accountId }).populate({ path: '_accountCart', match: { product: productId } });
   if (account) {
     if (account._accountCart.length) {
@@ -191,7 +199,7 @@ async function checkProductIfHoldByAccountId({ accountId, productId }) {
  * @param {ProductIdAndAmount} { id, amount }
  */
 async function findProductByIdAndUpdateAmountIfGTE({ id, amount }) {
-  const product = await db.products.findOneAndUpdate({ _id: id, amount: { $gte: amount } }, { $inc: { amount } }, { new: true });
+  const product = await db.products.findOneAndUpdate({ _id: id, amount: { $gte: amount } }, { $inc: { amount: -1 * amount } }, { new: true });
   return product ? { id: product.id, name: product.name, amount: product.amount } : null;
 }
 
@@ -220,6 +228,7 @@ async function findCartAndUpdateAmount({ holder, product, amount }) {
  * @param ProductIDName { id, name }
  */
 async function findProduct({ id, name }) {
+  if (!mongoose.Types.ObjectId.isValid(id)) throw 'Invalid product id';
   const query = {};
   if (id) query._id = id;
   if (name) query.name = name;

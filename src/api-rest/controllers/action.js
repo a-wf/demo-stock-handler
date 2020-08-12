@@ -14,7 +14,7 @@ async function holdProduct(req, res, next) {
       next('Amount has to be greater than 0');
     } else {
       const { accountId, productId } = req.query;
-      if (amount && mongoose.Types.ObjectId.isValid(accountId) && mongoose.Types.ObjectId.isValid(productId)) {
+      if (amount && accountId && productId) {
         await services.queries.holdProduct({ amount, accountId, productId });
         res.status(200).end();
       } else {
@@ -34,7 +34,7 @@ async function updateCartAmount(req, res, next) {
   try {
     const { amount } = req.body;
     const { accountId, productId } = req.query;
-    if (mongoose.Types.ObjectId.isValid(accountId) && mongoose.Types.ObjectId.isValid(productId)) {
+    if ((accountId, productId)) {
       await services.queries.updateCartAmount({ amount, accountId, productId });
       res.status(200).end();
     } else {
@@ -52,7 +52,7 @@ async function updateCartAmount(req, res, next) {
 async function moveCart(req, res, next) {
   try {
     const { accountId, productId } = req.query;
-    if (mongoose.Types.ObjectId.isValid(accountId) && mongoose.Types.ObjectId.isValid(productId)) {
+    if (accountId && productId) {
       await services.queries.moveCart({ accountId, productId });
       res.status(200).end();
     } else {

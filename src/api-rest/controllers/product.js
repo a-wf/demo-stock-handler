@@ -33,7 +33,7 @@ async function updateProductStock(req, res, next) {
   try {
     const { amount } = req.body;
     const { productId } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(productId)) res.status(400).send('Bad request');
+    if (!productId) res.status(400).send('Bad request');
 
     await services.queries.updateProductStock({ productId, amount });
     res.status(200).end();

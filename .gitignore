@@ -2,3 +2,4 @@ node_modules
 build
 logs
 coverage
+docker_products_depot_handler_3.0.0.img

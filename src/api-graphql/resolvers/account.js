@@ -109,6 +109,7 @@ module.exports = {
 
       if (!accountId) return new UserInputError('Bad parameters');
       await queries.removeAccount({ accountId });
+      return 'OK';
     }
   }
 };

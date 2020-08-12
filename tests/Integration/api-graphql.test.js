@@ -1,17 +1,16 @@
 'use strict';
 process.env.API_TYPE = 'graphql';
-process.env.DATABASE_NAME = 'db_test_graphql';
+process.env.DATABASE_NAME = 'db_graphql';
 
 const request = require('supertest');
-
-const inMemoryDB = require('../test-utils/inMemoryMongo');
-let db = require('../../src/database');
-db.client = inMemoryDB.mongooseClient;
-
-const { createToken } = require('./../../src/libs/token-auth');
 const config = require('../../src/config');
-const app = require('../../src/app');
 
+const testDB = require('../test-utils/db');
+const db = require('../../src/database');
+db.client = testDB.client || db.client;
+
+const { createToken } = require('../../src/libs/token-auth');
+const app = require('../../src/app');
 function doCall(request) {
   return request
     .set('accept-encoding', 'compress')
@@ -26,11 +25,11 @@ function doCall(request) {
 describe('Integration tests - Graphql Api', function () {
   const testAuthToken = createToken({ username: config.server.adminLogin, password: config.server.adminPassword });
   beforeAll(async () => {
-    await inMemoryDB.connect();
+    await testDB.connect();
   });
   afterAll(async () => {
-    await inMemoryDB.clearDatabase();
-    await inMemoryDB.closeDatabase();
+    await testDB.teardown();
+    await testDB.disconnect(db.client);
     await app.close();
   });
 
@@ -46,7 +45,7 @@ describe('Integration tests - Graphql Api', function () {
           .set('Authorization', `Bearer ${testAuthToken}`)
           .send({ query: `mutation { addAccount(username: "${username}"){id}}` })
           .expect(200)
-          .expect((res) => {
+          .expect(res => {
             expect(res.body).toHaveProperty('data');
             expect(res.body.data).toHaveProperty('addAccount');
             expect(res.body.data.addAccount).toHaveProperty('id');
@@ -67,7 +66,7 @@ describe('Integration tests - Graphql Api', function () {
         await doCall(request(app).post('/graphql'))
           .send({ query: `mutation { addAccount(username: "${username}"){id}}` })
           .expect(200)
-          .expect((res) => {
+          .expect(res => {
             expect(res.body).toHaveProperty('errors');
             expect(Array.isArray(res.body.errors)).toBe(true);
             expect(res.body.errors[0]).toHaveProperty('message');
@@ -84,7 +83,7 @@ describe('Integration tests - Graphql Api', function () {
           .set('Authorization', `Bearer ${testAuthToken}`)
           .send({ query: `mutation { addAccount(username: "${username2}"){id}}` })
           .expect(200)
-          .expect((res) => {
+          .expect(res => {
             expect(res.body).toHaveProperty('data');
             expect(res.body.data).toHaveProperty('addAccount');
             expect(res.body.data.addAccount).toHaveProperty('id');
@@ -114,7 +113,7 @@ describe('Integration tests - Graphql Api', function () {
             }`
           })
           .expect(200)
-          .expect((res) => {
+          .expect(res => {
             expect(res.body).toHaveProperty('data');
             expect(res.body.data).toHaveProperty('addProduct');
             expect(res.body.data.addProduct).toHaveProperty('id');
@@ -131,7 +130,7 @@ describe('Integration tests - Graphql Api', function () {
             query: 'mutation addProductToDepot($productB: String!, $amount: Int!) {  addProduct(name: $productB, amount: $amount) { id }}'
           })
           .expect(200)
-          .expect((res) => {
+          .expect(res => {
             expect(res.body).toHaveProperty('data');
             expect(res.body.data).toHaveProperty('addProduct');
             expect(res.body.data.addProduct).toHaveProperty('id');
@@ -163,7 +162,7 @@ describe('Integration tests - Graphql Api', function () {
               }`
           })
           .expect(200)
-          .expect((res) => {
+          .expect(res => {
             expect(res.body).toStrictEqual({
               data: {
                 updateProductStock: { id: productId, amount: expectedAmount, name: productA }
@@ -179,14 +178,14 @@ describe('Integration tests - Graphql Api', function () {
         await doCall(request(app).post('/graphql'))
           .send({ operationName: null, variables: {}, query: '{ products { id name amount }}' })
           .expect(200)
-          .expect((res) => {
+          .expect(res => {
             expect(Array.isArray(res.body.data.products)).toBe(true);
             expect(res.body.data.products.length).toEqual(2);
             expect(res.body.data.products[0]).toHaveProperty('name');
             expect(res.body.data.products[0]).toHaveProperty('amount');
             expect(res.body.data.products[1]).toHaveProperty('name');
             expect(res.body.data.products[1]).toHaveProperty('amount');
-            const product = res.body.data.products.find((prod) => prod.id === productId);
+            const product = res.body.data.products.find(prod => prod.id === productId);
             expect(product).toMatchObject({ id: productId, name: productA, amount: stockAmount });
           });
       });
@@ -217,7 +216,7 @@ describe('Integration tests - Graphql Api', function () {
             }`
           })
           .expect(200)
-          .expect((res) => {
+          .expect(res => {
             expect(res.body).toStrictEqual({
               data: {
                 holdProduct: {
@@ -251,7 +250,7 @@ describe('Integration tests - Graphql Api', function () {
             }`
           })
           .expect(200)
-          .expect((res) => {
+          .expect(res => {
             stockAmountB = expectedAmountB;
             holdAmountB = amount;
           });
@@ -280,7 +279,7 @@ describe('Integration tests - Graphql Api', function () {
             }`
           })
           .expect(200)
-          .expect((res) => {
+          .expect(res => {
             expect(res.body).toStrictEqual({
               data: {
                 getAccountHolds: [
@@ -326,7 +325,7 @@ describe('Integration tests - Graphql Api', function () {
             }`
           })
           .expect(200)
-          .expect((res) => {
+          .expect(res => {
             expect(res.body).toStrictEqual({
               data: {
                 updateCartAmount: {
@@ -364,7 +363,7 @@ describe('Integration tests - Graphql Api', function () {
             }`
           })
           .expect(200)
-          .expect((res) => {
+          .expect(res => {
             expect(res.body).toStrictEqual({
               data: {
                 moveCart: {
@@ -386,11 +385,11 @@ describe('Integration tests - Graphql Api', function () {
           .expect(200);
       });
 
-      it('responds OK, account holded and unmoved products are returned to depot stock', async () => {
+      it('responds OK, account held and unmoved products are returned to depot stock', async () => {
         await doCall(request(app).post('/graphql'))
           .send({ operationName: null, variables: {}, query: '{ products { id name amount }}' })
           .expect(200)
-          .expect((res) => {
+          .expect(res => {
             expect(res.body).toStrictEqual({
               data: {
                 products: [

@@ -6,10 +6,6 @@ exports.seed = function (knex) {
     .del()
     .then(function () {
       // Inserts seed entries
-      return knex('accounts').insert([
-        { id: 1, username: 'accountA' },
-        { id: 2, username: 'accountB' },
-        { id: 3, username: 'accountC' }
-      ]);
+      return knex('accounts').insert([{ username: 'accountA' }, { username: 'accountB' }, { username: 'accountC' }]);
     });
 };

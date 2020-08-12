@@ -51,7 +51,6 @@ module.exports = {
         return new AuthenticationError('must be authenticated as admin');
       }
       const { productId, amount } = args;
-
       if (!productId || !amount) return new UserInputError('Bad parameters');
       return await queries.updateProductStock({ productId, amount });
     }
