@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v3.0.0] - 2020-08-12 (day six)
+
+### Test
+
+- new coverage: 84% using mongodb and 86% using posgresql
+- update queries-services.test.js
+
+### Added
+
+- postgresql support
+- in-memory rate limiter (when using postgresql)
+
+### Changed
+
+- services/queries.js change to module folder, for support of mongo and postgresql
+- request-id move from response body to response header
+
+### Fixed
+
+- fix bug about express controllers
+- fix bug in test implementation
+
 ## [v2.1.1] - 2020-08-11 (day five)
 
 ### Test

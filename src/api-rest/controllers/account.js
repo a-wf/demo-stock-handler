@@ -1,7 +1,6 @@
 'use strict';
 
 const services = require('../../services');
-const mongoose = require('mongoose');
 
 /**
  * Add new account - express controller
@@ -28,7 +27,7 @@ async function addAccount(req, res, next) {
 async function removeAccount(req, res, next) {
   try {
     const { accountId } = req.params;
-    if (mongoose.Types.ObjectId.isValid(accountId)) {
+    if (accountId) {
       await services.queries.removeAccount({ accountId });
       res.status(200).end();
     } else {
@@ -46,7 +45,7 @@ async function removeAccount(req, res, next) {
 async function getAccountHolds(req, res, next) {
   try {
     const { accountId } = req.params;
-    if (mongoose.Types.ObjectId.isValid(accountId)) {
+    if (accountId) {
       const data = await services.queries.getAccountHolds({ accountId });
       res.status(200).json({ data });
     } else {

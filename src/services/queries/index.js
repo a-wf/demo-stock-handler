@@ -10,7 +10,6 @@ switch (config.database[config.common.nodeEnv].client) {
     dbQueries = require('./nosql');
     break;
   case 'postgresql':
-  case 'sqlite3':
   default:
     dbQueries = require('./sql');
 }
@@ -32,7 +31,7 @@ async function addAccount({ username }) {
     logger.Info('Queries', 'addAccount', `Add new account: ${JSON.stringify(result)}`);
     return result;
   } catch (error) {
-    if (error.message.includes('E11000 duplicate key')) throw 'username already exists';
+    if (error.message.includes('duplicate key')) throw 'username already exists';
     throw error;
   }
 }
@@ -50,10 +49,7 @@ async function addAccount({ username }) {
  */
 async function getAccount({ accountId, username }) {
   logger.Debug('Queries', 'getAccount', `args: ${JSON.stringify({ accountId, username })}`);
-  const query = {};
-  if (accountId) query.id = accountId;
-  if (username) query.username = username;
-  const result = await dbQueries.findAccount(query);
+  const result = await dbQueries.findAccount({ id: accountId, username });
   if (!result) throw 'Not found account';
   return { id: result.id, username: result.username };
 }
@@ -127,7 +123,7 @@ async function addProduct({ name, amount }) {
     logger.Info('Queries', 'addProduct', `add new products: ${JSON.stringify(result)}`);
     return result;
   } catch (error) {
-    if (error.message.includes('E11000 duplicate key')) throw 'product collection already exists';
+    if (error.message.includes('duplicate key')) throw 'product collection already exists';
     throw error;
   }
 }
@@ -200,7 +196,7 @@ async function holdProduct({ accountId, productId, amount }) {
   const account = await dbQueries.checkProductIfHoldByAccountId({ accountId, productId });
   if (account) {
     if (!account.holdThisProduct) {
-      const product = await dbQueries.findProductByIdAndUpdateAmountIfGTE({ id: productId, amount: -1 * amount });
+      const product = await dbQueries.findProductByIdAndUpdateAmountIfGTE({ id: productId, amount });
       if (product) {
         const result = await dbQueries.holdInCart({ holder: accountId, product: productId, amount });
         logger.Info('Queries', 'holdProduct', `account ${accountId} holds ${amount} products ${productId}`);
@@ -227,7 +223,7 @@ async function updateCartAmount({ accountId, productId, amount }) {
   const account = await dbQueries.checkProductIfHoldByAccountId({ accountId, productId });
   if (account) {
     if (account.holdThisProduct) {
-      const product = await dbQueries.findProductByIdAndUpdateAmountIfGTE({ id: productId, amount: -1 * amount });
+      const product = await dbQueries.findProductByIdAndUpdateAmountIfGTE({ id: productId, amount });
       if (product) {
         const newData = await dbQueries.findCartAndUpdateAmount({ holder: accountId, product: productId, amount });
         logger.Info('Queries', 'updateCartAmount', `account ${accountId} holds ${newData.amount} products ${productId}`);
@@ -307,5 +303,6 @@ module.exports = {
   holdProduct,
   getProductHolders,
   updateCartAmount,
-  moveCart
+  moveCart,
+  dbQueries: config.common.nodeEnv === 'test' ? dbQueries : null
 };

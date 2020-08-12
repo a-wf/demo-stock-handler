@@ -53,7 +53,7 @@ class Cart extends Model {
 
   static get relationMappings() {
     return {
-      account: {
+      accountId: {
         relation: Model.BelongsToOneRelation,
         modelClass: Account,
         join: {
@@ -61,7 +61,7 @@ class Cart extends Model {
           to: 'accounts.id'
         }
       },
-      product: {
+      productId: {
         relation: Model.BelongsToOneRelation,
         modelClass: Product,
         join: {
@@ -73,4 +73,5 @@ class Cart extends Model {
   }
 }
 
-module.exports = { Account, Product, Cart };
+client.close = client.destroy;
+module.exports = { client, Account, Product, Cart };

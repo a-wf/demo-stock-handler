@@ -1,7 +1,7 @@
 version: '3'
 services:
   products_depot_handler_container:
-    image: docker_products_depot_handler:1.0.0
+    image: docker_products_depot_handler:3.0.0
     environment:
       NODE_ENV: development
     ports:
