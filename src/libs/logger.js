@@ -57,7 +57,7 @@ class Logger {
             Winston.format.timestamp({
               format: 'YYYY-MM-DD HH:mm:ss'
             }),
-            config.jsonFormat ? Winston.format.json() : Winston.format.simple()
+            Winston.format.printf(({ level, message, label, timestamp }) => `${timestamp} ${level} [${label}]: ${message}`)
           )
         })
       ]

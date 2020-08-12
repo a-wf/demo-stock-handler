@@ -5,9 +5,7 @@ const { common, database } = require('../../config');
 const { logger } = require('../../libs/logger');
 const dbConfig = database[common.nodeEnv].connection;
 
-module.exports = {
-  ...require('./models')
-};
+module.exports = require('./models');
 
 if (common.nodeEnv !== 'test') {
   let mongo_url = 'mongodb://';

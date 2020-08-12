@@ -15,7 +15,7 @@ async function addProduct(req, res, next) {
     } else {
       if (name) {
         const data = await services.queries.addProduct({ name, amount });
-        res.status(200).json({ 'request-id': req.header('X-REQUEST-ID'), data });
+        res.status(200).json({ data });
       } else {
         res.status(400).send('Bad request');
       }
@@ -36,7 +36,7 @@ async function updateProductStock(req, res, next) {
     if (!mongoose.Types.ObjectId.isValid(productId)) res.status(400).send('Bad request');
 
     await services.queries.updateProductStock({ productId, amount });
-    res.status(200).json({ 'request-id': req.header('X-REQUEST-ID') });
+    res.status(200).end();
   } catch (error) {
     next(error);
   }
@@ -49,7 +49,7 @@ async function updateProductStock(req, res, next) {
 async function listProducts(req, res, next) {
   try {
     const data = await services.queries.listProducts({});
-    res.status(200).json({ 'request-id': req.header('X-REQUEST-ID'), data });
+    res.status(200).json({ data });
   } catch (error) {
     next(error);
   }

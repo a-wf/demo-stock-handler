@@ -46,7 +46,7 @@ function apiKeyMiddleware(apiKeyValue) {
     if (!apiKeyValue) {
       next();
     } else {
-      const apiKey = req.header('X-API-KEY');
+      const apiKey = req.get('X-API-KEY');
       if (apiKey === apiKeyValue) {
         next();
       } else {
@@ -54,6 +54,19 @@ function apiKeyMiddleware(apiKeyValue) {
       }
     }
   };
+}
+
+/**
+ * set resquestId in Header of response
+ * @param {Error|string} err
+ * @param {object} req
+ * @param {object} res
+ * @param {Function} next
+ */
+// eslint-disable-next-line no-unused-vars
+function setRequestIdInResponseHeader(req, res, next) {
+  res.set('X-REQUEST-ID', req.get('X-REQUEST-ID'));
+  next();
 }
 
 /**
@@ -65,18 +78,15 @@ function apiKeyMiddleware(apiKeyValue) {
  */
 // eslint-disable-next-line no-unused-vars
 function errorHandler(err, req, res, next) {
-  const requestId = { 'request-id': req.header('X-REQUEST-ID') };
   if (err instanceof Error) {
     logger.Error('App', 'errorHandler', `${err.stack}`);
     res.status(err.status || 500).json({
-      data: err.message,
-      ...requestId
+      data: err.message
     });
   } else {
     logger.Error('App', 'errorHandler', `${err}`); // maybe just log as info message, because it is not server-side bug error
     res.status(400).json({
-      data: err,
-      ...requestId
+      data: err
     });
   }
 }
@@ -85,5 +95,6 @@ module.exports = {
   rateLimiterMiddleware,
   logMiddleware,
   apiKeyMiddleware,
+  setRequestIdInResponseHeader,
   errorHandler
 };

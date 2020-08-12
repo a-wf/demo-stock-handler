@@ -36,7 +36,7 @@ class RestAPI {
         app.use(controllers());
         app.use(errorHandler);
       })
-      .catch((error) => {
+      .catch(error => {
         throw error;
       });
   }

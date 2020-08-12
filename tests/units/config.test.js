@@ -15,7 +15,7 @@ describe(`Test 'config loading' code`, () => {
     test('it should contains mandatory fields', () => {
       const { database } = config;
       const expected = {
-        client: 'mongo',
+        client: 'mongodb',
         connection: {
           host: 'localhost',
           user: 'test',

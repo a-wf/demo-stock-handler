@@ -3,6 +3,7 @@ process.env.API_TYPE = 'rest';
 process.env.DATABASE_NAME = 'db_test_restl';
 
 const request = require('supertest');
+const randomstring = require('randomstring');
 
 const inMemoryDB = require('../test-utils/inMemoryMongo');
 let db = require('../../src/database');
@@ -25,6 +26,10 @@ function doCall(request) {
 describe('Integration tests - Rest API', function () {
   const authUser = config.server.adminLogin;
   const authPwd = config.server.adminPassword;
+  let requestId = 0;
+  beforeEach(() => {
+    requestId = randomstring.generate();
+  });
   beforeAll(async () => {
     await inMemoryDB.connect();
   });
@@ -41,12 +46,12 @@ describe('Integration tests - Rest API', function () {
         const username = 'testuser-rest';
         await doCall(request(app).post('/account'))
           .auth(`${authUser}`, `${authPwd}`)
-          .set('X-REQUEST-ID', `1234`)
+          .set('X-REQUEST-ID', requestId)
           .send({ username })
           .expect(200)
-          .expect((res) => {
-            expect(res.body).toHaveProperty('request-id');
-            expect(res.body['request-id']).toEqual('1234');
+          .expect('x-request-id', requestId)
+          .expect(res => {
+            console.log(res.headers);
             expect(res.body.data).toHaveProperty('id');
             expect(typeof res.body.data.id).toEqual('string');
             accountId = res.body.data.id;
@@ -55,13 +60,12 @@ describe('Integration tests - Rest API', function () {
       it('responds with 400 bad request', async () => {
         await doCall(request(app).post('/account'))
           .auth(`${authUser}`, `${authPwd}`)
-          .set('X-REQUEST-ID', `1234`)
+          .set('X-REQUEST-ID', requestId)
           .send({})
           .expect(400)
-          .expect((res) => {
-            expect(res.body).toHaveProperty('request-id');
+          .expect('X-REQUEST-ID', requestId)
+          .expect(res => {
             expect(res.body).toHaveProperty('data');
-            expect(res.body['request-id']).toEqual('1234');
             expect(res.body.data).toEqual("request.body should have required property 'username'");
           });
       });
@@ -69,13 +73,13 @@ describe('Integration tests - Rest API', function () {
       it('responds with 401 unauthorized', async () => {
         const username = 'testuser-rest2';
         await doCall(request(app).post('/account'))
-          .set('X-REQUEST-ID', `1234`)
+          .set('X-REQUEST-ID', requestId)
           .send({ username })
           .expect(401)
-          .expect((res) => {
-            expect(res.body).toHaveProperty('request-id');
+          .expect('X-REQUEST-ID', requestId)
+          .expect(res => {
             expect(res.body).toHaveProperty('data');
-            expect(res.body['request-id']).toEqual('1234');
+
             expect(res.body.data).toEqual('Authorization header required');
           });
       });
@@ -86,12 +90,11 @@ describe('Integration tests - Rest API', function () {
         let temp;
         await doCall(request(app).post('/account'))
           .auth(`${authUser}`, `${authPwd}`)
-          .set('X-REQUEST-ID', `1234`)
+          .set('X-REQUEST-ID', requestId)
           .send({ username: 'toto' })
           .expect(200)
-          .expect((res) => {
-            expect(res.body).toHaveProperty('request-id');
-            expect(res.body['request-id']).toEqual('1234');
+          .expect('X-REQUEST-ID', requestId)
+          .expect(res => {
             expect(res.body.data).toHaveProperty('id');
             expect(typeof res.body.data.id).toEqual('string');
             temp = res.body.data.id;
@@ -99,12 +102,11 @@ describe('Integration tests - Rest API', function () {
 
         await doCall(request(app).delete('/account/' + temp))
           .auth(`${authUser}`, `${authPwd}`)
-          .set('X-REQUEST-ID', `1234`)
+          .set('X-REQUEST-ID', requestId)
+
           .expect(200)
-          .expect((res) => {
-            expect(res.body).toHaveProperty('request-id');
-            expect(res.body['request-id']).toEqual('1234');
-          });
+          .expect('X-REQUEST-ID', requestId)
+          .expect(res => {});
       });
     });
 
@@ -115,12 +117,12 @@ describe('Integration tests - Rest API', function () {
         const amount = 100;
         await doCall(request(app).post('/product'))
           .auth(`${authUser}`, `${authPwd}`)
-          .set('X-REQUEST-ID', `1234`)
+          .set('X-REQUEST-ID', requestId)
+
           .send({ name: productA, amount })
           .expect(200)
-          .expect((res) => {
-            expect(res.body).toHaveProperty('request-id');
-            expect(res.body['request-id']).toEqual('1234');
+          .expect('X-REQUEST-ID', requestId)
+          .expect(res => {
             expect(res.body.data).toHaveProperty('id');
             expect(typeof res.body.data.id).toEqual('string');
             productId = res.body.data.id;
@@ -129,12 +131,12 @@ describe('Integration tests - Rest API', function () {
 
         await doCall(request(app).post('/product'))
           .auth(`${authUser}`, `${authPwd}`)
-          .set('X-REQUEST-ID', `1234`)
+          .set('X-REQUEST-ID', requestId)
+
           .send({ name: productB, amount: 70 })
           .expect(200)
-          .expect((res) => {
-            expect(res.body).toHaveProperty('request-id');
-            expect(res.body['request-id']).toEqual('1234');
+          .expect('X-REQUEST-ID', requestId)
+          .expect(res => {
             expect(res.body.data).toHaveProperty('id');
             expect(typeof res.body.data.id).toEqual('string');
           });
@@ -146,11 +148,12 @@ describe('Integration tests - Rest API', function () {
         const amount = 50;
         await doCall(request(app).patch('/product/' + productId))
           .auth(`${authUser}`, `${authPwd}`)
-          .set('X-REQUEST-ID', `1234`)
+          .set('X-REQUEST-ID', requestId)
+
           .send({ amount })
           .expect(200)
-          .expect((res) => {
-            expect(res.body).toMatchObject({ 'request-id': '1234' });
+          .expect('X-REQUEST-ID', requestId)
+          .expect(res => {
             stockAmount = stockAmount + amount;
           });
       });
@@ -159,18 +162,18 @@ describe('Integration tests - Rest API', function () {
     describe('GET /products', function () {
       it('responds OK with list of products', async () => {
         await doCall(request(app).get('/products'))
-          .set('X-REQUEST-ID', `1234`)
+          .set('X-REQUEST-ID', requestId)
+
           .expect(200)
-          .expect((res) => {
-            expect(res.body).toHaveProperty('request-id');
-            expect(res.body['request-id']).toEqual('1234');
+          .expect('X-REQUEST-ID', requestId)
+          .expect(res => {
             expect(Array.isArray(res.body.data)).toBe(true);
             expect(res.body.data.length).toEqual(2);
             expect(res.body.data[0]).toHaveProperty('name');
             expect(res.body.data[0]).toHaveProperty('amount');
             expect(res.body.data[1]).toHaveProperty('name');
             expect(res.body.data[1]).toHaveProperty('amount');
-            const product = res.body.data.find((prod) => prod.id === productId);
+            const product = res.body.data.find(prod => prod.id === productId);
             expect(product).toMatchObject({ id: productId, name: 'product-A', amount: stockAmount });
           });
       });
@@ -180,21 +183,21 @@ describe('Integration tests - Rest API', function () {
       it('responds 200', async () => {
         const amount = 80;
         await doCall(request(app).post(`/action/hold?accountId=${accountId}&productId=${productId}`))
-          .set('X-REQUEST-ID', `1234`)
+          .set('X-REQUEST-ID', requestId)
+
           .send({ name: productId, amount })
           .expect(200)
-          .expect((res) => {
-            expect(res.body).toMatchObject({ 'request-id': '1234' });
-          });
+          .expect('X-REQUEST-ID', requestId)
+          .expect(res => {});
 
         await doCall(request(app).get('/products'))
-          .set('X-REQUEST-ID', `1234`)
+          .set('X-REQUEST-ID', requestId)
+
           .expect(200)
-          .expect((res) => {
-            expect(res.body).toHaveProperty('request-id');
-            expect(res.body['request-id']).toEqual('1234');
+          .expect('X-REQUEST-ID', requestId)
+          .expect(res => {
             expect(Array.isArray(res.body.data)).toBe(true);
-            const product = res.body.data.find((prod) => prod.id === productId);
+            const product = res.body.data.find(prod => prod.id === productId);
             expect(product).toMatchObject({ id: productId, name: 'product-A', amount: stockAmount - amount });
           });
         stockAmount = stockAmount - amount;
@@ -205,13 +208,13 @@ describe('Integration tests - Rest API', function () {
     describe('GET /account/:accountId/products', function () {
       it('responds 200 with list of account', async () => {
         await doCall(request(app).get(`/account/${accountId}/products`))
-          .set('X-REQUEST-ID', `1234`)
+          .set('X-REQUEST-ID', requestId)
+
           .expect(200)
-          .expect((res) => {
-            expect(res.body).toHaveProperty('request-id');
-            expect(res.body['request-id']).toEqual('1234');
+          .expect('X-REQUEST-ID', requestId)
+          .expect(res => {
             expect(Array.isArray(res.body.data)).toBe(true);
-            const product = res.body.data.find((prod) => prod.product === productId);
+            const product = res.body.data.find(prod => prod.product === productId);
             expect(product).toMatchObject({ product: productId, amount: holdAmount });
           });
       });
@@ -221,32 +224,32 @@ describe('Integration tests - Rest API', function () {
       it('responds 200', async () => {
         const amount = -35;
         await doCall(request(app).patch(`/action/hold?accountId=${accountId}&productId=${productId}`))
-          .set('X-REQUEST-ID', `1234`)
+          .set('X-REQUEST-ID', requestId)
+
           .send({ amount })
           .expect(200)
-          .expect((res) => {
-            expect(res.body).toMatchObject({ 'request-id': '1234' });
-          });
+          .expect('X-REQUEST-ID', requestId)
+          .expect(res => {});
 
         await doCall(request(app).get(`/account/${accountId}/products`))
-          .set('X-REQUEST-ID', `1234`)
+          .set('X-REQUEST-ID', requestId)
+
           .expect(200)
-          .expect((res) => {
-            expect(res.body).toHaveProperty('request-id');
-            expect(res.body['request-id']).toEqual('1234');
+          .expect('X-REQUEST-ID', requestId)
+          .expect(res => {
             expect(Array.isArray(res.body.data)).toBe(true);
-            const product = res.body.data.find((prod) => prod.product === productId);
+            const product = res.body.data.find(prod => prod.product === productId);
             expect(product).toMatchObject({ product: productId, amount: holdAmount + amount });
           });
 
         await doCall(request(app).get('/products'))
-          .set('X-REQUEST-ID', `1234`)
+          .set('X-REQUEST-ID', requestId)
+
           .expect(200)
-          .expect((res) => {
-            expect(res.body).toHaveProperty('request-id');
-            expect(res.body['request-id']).toEqual('1234');
+          .expect('X-REQUEST-ID', requestId)
+          .expect(res => {
             expect(Array.isArray(res.body.data)).toBe(true);
-            const product = res.body.data.find((prod) => prod.id === productId);
+            const product = res.body.data.find(prod => prod.id === productId);
             expect(product).toMatchObject({ id: productId, name: 'product-A', amount: stockAmount - amount });
           });
 
@@ -258,29 +261,29 @@ describe('Integration tests - Rest API', function () {
     describe('DELETE /action/hold?accountId=xxx&productId=xxx', function () {
       it('responds with json', async () => {
         await doCall(request(app).delete(`/action/hold?accountId=${accountId}&productId=${productId}`))
-          .set('X-REQUEST-ID', `1234`)
+          .set('X-REQUEST-ID', requestId)
+
           .expect(200)
-          .expect((res) => {
-            expect(res.body).toMatchObject({ 'request-id': '1234' });
-          });
+          .expect('X-REQUEST-ID', requestId)
+          .expect(res => {});
 
         await doCall(request(app).get(`/account/${accountId}/products`))
-          .set('X-REQUEST-ID', `1234`)
+          .set('X-REQUEST-ID', requestId)
+
           .expect(200)
-          .expect((res) => {
-            expect(res.body).toHaveProperty('request-id');
-            expect(res.body['request-id']).toEqual('1234');
+          .expect('X-REQUEST-ID', requestId)
+          .expect(res => {
             expect(Array.isArray(res.body.data)).toBe(true);
           });
 
         await doCall(request(app).get('/products'))
-          .set('X-REQUEST-ID', `1234`)
+          .set('X-REQUEST-ID', requestId)
+
           .expect(200)
-          .expect((res) => {
-            expect(res.body).toHaveProperty('request-id');
-            expect(res.body['request-id']).toEqual('1234');
+          .expect('X-REQUEST-ID', requestId)
+          .expect(res => {
             expect(Array.isArray(res.body.data)).toBe(true);
-            const product = res.body.data.find((prod) => prod.id === productId);
+            const product = res.body.data.find(prod => prod.id === productId);
             expect(product).toMatchObject({ id: productId, name: 'product-A', amount: stockAmount });
           });
       });

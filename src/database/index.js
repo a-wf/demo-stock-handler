@@ -10,7 +10,7 @@ switch (config.database[config.common.nodeEnv].client) {
     break;
   case 'postgresql':
   default:
-    database = require('./postgresql');
+    database = require('./postgresql/knexfile');
 }
 
 module.exports = database;
