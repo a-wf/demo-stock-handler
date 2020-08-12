@@ -11,13 +11,13 @@ module.exports = {
     }
   },
   Product: {
-    id: (parent) => {
+    id: parent => {
       return parent.id;
     },
-    name: (parent) => {
+    name: parent => {
       return parent.name;
     },
-    amount: (parent) => {
+    amount: parent => {
       return parent.amount;
     },
     getProductHolders: async (parent, args, context) => {

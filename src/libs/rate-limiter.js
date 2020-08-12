@@ -15,10 +15,10 @@ const { RateLimiterPostgres, RateLimiterMongo } = require('rate-limiter-flexible
  * create a rate limiter using prosgresql db
  * @param {Opts} opts
  */
-module.exports.createRateLimiterPostgres = async (opts) => {
+module.exports.createRateLimiterPostgres = async opts => {
   return new Promise((resolve, reject) => {
     let rateLimiter;
-    const ready = (err) => {
+    const ready = err => {
       if (err) {
         reject(err);
       } else {
@@ -41,6 +41,6 @@ module.exports.createRateLimiterPostgres = async (opts) => {
  * create a rate limiter using mongo db
  * @param {OptsMongo} opts
  */
-module.exports.createRateLimiterMongo = (opts) => {
+module.exports.createRateLimiterMongo = opts => {
   return new RateLimiterMongo(opts);
 };

@@ -7,7 +7,7 @@ describe(`Test 'middleware'`, () => {
   let mockReq, mockRes, mockNext;
   beforeEach(() => {
     mockReq = {
-      header: jest.fn()
+      get: jest.fn()
     };
     mockRes = {
       status: jest.fn(),
@@ -17,7 +17,6 @@ describe(`Test 'middleware'`, () => {
     mockNext = jest.fn();
   });
   afterEach(() => {
-    mockReq.header.mockClear();
     mockRes.send.mockClear();
     mockRes.status.mockClear();
     mockNext.mockClear();
@@ -79,19 +78,19 @@ describe(`Test 'middleware'`, () => {
   describe(`apiKeyMiddleware: `, () => {
     test('call', () => {
       const apiKeyValue = 'apikey test 123';
-      mockReq.header.mockReturnValue(apiKeyValue);
+      mockReq.get.mockReturnValue(apiKeyValue);
       mockRes.status.mockReturnValue({ send: mockRes.send });
       apiKeyMiddleware(apiKeyValue)(mockReq, mockRes, mockNext);
 
       expect(mockNext.mock.calls.length).toBe(1);
-      expect(mockReq.header.mock.calls.length).toBe(1);
-      expect(mockReq.header.mock.calls[0][0]).toEqual('X-API-KEY');
+      expect(mockReq.get.mock.calls.length).toBe(1);
+      expect(mockReq.get.mock.calls[0][0]).toEqual('X-API-KEY');
 
       apiKeyMiddleware('wrong apikey')(mockReq, mockRes, mockNext);
       expect(mockRes.status.mock.calls.length).toBe(1);
       expect(mockRes.send.mock.calls.length).toBe(1);
-      expect(mockReq.header.mock.calls.length).toBe(2);
-      expect(mockReq.header.mock.calls[1][0]).toEqual('X-API-KEY');
+      expect(mockReq.get.mock.calls.length).toBe(2);
+      expect(mockReq.get.mock.calls[1][0]).toEqual('X-API-KEY');
       expect(mockRes.status.mock.calls[0][0]).toEqual(401);
       expect(mockRes.send.mock.calls[0][0]).toEqual('Unauthorized');
     });
@@ -106,22 +105,17 @@ describe(`Test 'middleware'`, () => {
       jest.restoreAllMocks();
     });
     test('call', () => {
-      const requestId = '123';
-      mockReq.header.mockReturnValue(requestId);
       mockRes.status.mockReturnValue({ json: mockRes.json });
       const err = new Error();
       errorHandler(err, mockReq, mockRes, mockNext);
 
       expect(mockLogger.mock.calls.length).toBe(1);
       expect(mockLogger.mock.calls[0]).toMatchObject(['App', 'errorHandler', `${err.stack}`]);
-      expect(mockReq.header.mock.calls.length).toBe(1);
-      expect(mockReq.header.mock.calls[0][0]).toEqual('X-REQUEST-ID');
       expect(mockRes.status.mock.calls.length).toBe(1);
       expect(mockRes.status.mock.calls[0][0]).toEqual(500);
       expect(mockRes.json.mock.calls.length).toBe(1);
       expect(mockRes.json.mock.calls[0][0]).toMatchObject({
-        data: err.message,
-        'request-id': requestId
+        data: err.message
       });
 
       errorHandler('string error', mockReq, mockRes, mockNext);
@@ -129,12 +123,9 @@ describe(`Test 'middleware'`, () => {
       expect(mockLogger.mock.calls[1]).toMatchObject(['App', 'errorHandler', `string error`]);
       expect(mockRes.status.mock.calls.length).toBe(2);
       expect(mockRes.status.mock.calls[1][0]).toEqual(400);
-      expect(mockReq.header.mock.calls.length).toBe(2);
-      expect(mockReq.header.mock.calls[1][0]).toEqual('X-REQUEST-ID');
       expect(mockRes.json.mock.calls.length).toBe(2);
       expect(mockRes.json.mock.calls[1][0]).toMatchObject({
-        data: `string error`,
-        'request-id': requestId
+        data: `string error`
       });
     });
   });

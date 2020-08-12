@@ -12,7 +12,7 @@ async function addAccount(req, res, next) {
     const { username } = req.body;
     if (username) {
       const data = await services.queries.addAccount({ username });
-      res.status(200).json({ 'request-id': req.header('X-REQUEST-ID'), data });
+      res.status(200).json({ data });
     } else {
       res.status(400).send('Bad request');
     }
@@ -30,7 +30,7 @@ async function removeAccount(req, res, next) {
     const { accountId } = req.params;
     if (mongoose.Types.ObjectId.isValid(accountId)) {
       await services.queries.removeAccount({ accountId });
-      res.status(200).json({ 'request-id': req.header('X-REQUEST-ID') });
+      res.status(200).end();
     } else {
       res.status(400).send('Bad request');
     }
@@ -48,7 +48,7 @@ async function getAccountHolds(req, res, next) {
     const { accountId } = req.params;
     if (mongoose.Types.ObjectId.isValid(accountId)) {
       const data = await services.queries.getAccountHolds({ accountId });
-      res.status(200).json({ 'request-id': req.header('X-REQUEST-ID'), data });
+      res.status(200).json({ data });
     } else {
       res.status(400).send('Bad request');
     }

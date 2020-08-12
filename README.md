@@ -40,7 +40,8 @@ There are an administrator commands which can add new user accounts, new product
 
 There are also secured (by apiKey) public commands to list products, to list what products are holded by an user account, to hold new products, to inscreas and descrease an amount of holded products and to take out from the depot holded products. If an account is deleted without move out the holded products, products will be returned to the depot stock.
 
-This service is packaged in a docker image to easly deploy and test.
+This service is implemented with Node `require/module.exports` syntax (instead of ESM `export/import` syntax) because I am using Node.js v12 on my laptop, and `export/import` is only an experimental module.
+The code is packaged in a docker image to easly deploy and test.
 
 Implementation progress can be see in the changelog file, but it is really accurate. (It is mainly for myself: I update version each time I take a break)
 
@@ -60,7 +61,7 @@ Supertest
 
 ```
 
-If I have time, I want also add features like graphql API (`express-graphql or apollo-server-express`), change`MongoDB` by `PostgresQL via`Bookshelf + Knex + ProstgresQL`, create a customized error class, try to convert code in typescript and add metric producer for monitoring better.
+If I have time, I want also add features like graphql API (`express-graphql or apollo-server-express`), change`MongoDB` by `PostgresQL via`Objection + knex + pg`, create a customized error class, try to convert code in typescript and add metric producer for monitoring better.
 
 ```
 
@@ -74,11 +75,12 @@ Jest
 
 Supertest
 
-Typescript
-
 ```
 
 And finally, we can discuss about pro and con of features in the next step. (if there is a technical review interview)
+
+_Note_: I chose to try Objection because it is a new ORM which is growing up in trend and the benchmark that I found about this ORM, look nice https://github.com/emanuelcasco/typescript-orm-benchmark
+_Note_: There is another good painless ORM named Bookshelf, created by the same author of Knex, I recommend you to check. (I used it before at work)
 
 ## Configuration
 
@@ -196,6 +198,8 @@ MONITOR_PORT=7777
 
 **In project root directory**
 
+### To prepare
+
 Get packages:
 
 ```
@@ -204,15 +208,40 @@ yarn install --production
 
 ```
 
-To run:
+if you want to use mongoDB as database, you can just run for docker format:
+
+```
+docker run -d --name=mongodb --network=host mongod
+```
+
+If you are using postgresQL as database, you need to create firstly a database.
+As I use docker postgresQL here is the commande line:
 
 ```
 
-yarn install --production
+docker run -d --name=postgres --network=host -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=products_depot_db postgres
 
 ```
 
-To test:
+_Note_: I use `--network=host` because I known those services' port are not used by my machine.
+
+_for postgresQL, you have to prepare tables with this command_:
+
+```
+
+npx knex --knexfile ./src/database/postgresql/index.js migrate:latest
+
+```
+
+### To run
+
+```
+
+yarn start
+
+```
+
+### To test
 
 ```
 
@@ -220,7 +249,7 @@ yarn test
 
 ```
 
-To build:
+### To build
 
 ```
 
@@ -228,7 +257,7 @@ yarn build
 
 ```
 
-To run as docker (with `docker-compose`):
+### To run as docker (with `docker-compose`)
 
 ```
 
@@ -287,3 +316,7 @@ Integration tests are implemented using `Supertest`. I didn't implement full use
 #### Graphql API
 
 As for REST API, tests are implemented using `Supertest`. As with `Resolvers Chains` feature, Graphql API have more flexibility than REST API, use-cases are almost fully tested.
+
+```
+
+```
