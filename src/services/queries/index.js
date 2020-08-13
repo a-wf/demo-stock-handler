@@ -1,7 +1,18 @@
 'use strict';
 
-const db = require('./../database');
-const { logger } = require('./../libs/logger');
+const config = require('./../../config');
+const { logger } = require('./../../libs/logger');
+
+let dbQueries;
+
+switch (config.database[config.common.nodeEnv].client) {
+  case 'mongodb':
+    dbQueries = require('./nosql');
+    break;
+  case 'postgresql':
+  default:
+    dbQueries = require('./sql');
+}
 
 /**
  *
@@ -15,11 +26,12 @@ const { logger } = require('./../libs/logger');
  */
 async function addAccount({ username }) {
   try {
-    const result = await db.accounts.create({ username });
+    logger.Debug('Queries', 'addAccount', `args: ${JSON.stringify({ username })}`);
+    const result = await dbQueries.addAccount({ username });
     logger.Info('Queries', 'addAccount', `Add new account: ${JSON.stringify(result)}`);
-    return { id: result.id };
+    return result;
   } catch (error) {
-    if (error.message.includes('E11000 duplicate key')) throw 'username already exists';
+    if (error.message.includes('duplicate key')) throw 'username already exists';
     throw error;
   }
 }
@@ -31,15 +43,13 @@ async function addAccount({ username }) {
  * @property {string} username account username
  */
 /**
- * add new account to database
+ * find account
  * @param {accountIDUserName} {username}
  * @return {Promise<AccountID>}
  */
 async function getAccount({ accountId, username }) {
-  const query = {};
-  if (accountId) query._id = accountId;
-  if (username) query.username = username;
-  const result = await db.accounts.findOne(query);
+  logger.Debug('Queries', 'getAccount', `args: ${JSON.stringify({ accountId, username })}`);
+  const result = await dbQueries.findAccount({ id: accountId, username });
   if (!result) throw 'Not found account';
   return { id: result.id, username: result.username };
 }
@@ -55,22 +65,23 @@ async function getAccount({ accountId, username }) {
  * @return {Promise<void>}
  */
 async function removeAccount({ accountId }) {
-  const account = await db.accounts.findById({ _id: accountId }).populate('_accountCart');
+  logger.Debug('Queries', 'removeAccount', `args: ${JSON.stringify({ accountId })}`);
+  const account = await dbQueries.getAccountByIdAndCarts({ id: accountId });
   if (account) {
-    if (account._accountCart.length) {
+    if (account.carts.length) {
       await Promise.all(
-        account._accountCart.map(async (element) => {
-          await db.carts.deleteMany({ holder: accountId });
-          const product = await db.products.findByIdAndUpdate({ _id: element.product }, { $inc: { amount: element.amount } }, { new: true });
+        account.carts.map(async element => {
+          await dbQueries.deleteCartsByHolder({ holder: accountId });
+          const product = await dbQueries.findProductByIdAndUpdateAmount({ id: element.product, amount: element.amount });
           logger.Info('Queries', 'removeAccount', `remaining ${product.amount} products ${product.id} in stock`);
         })
       );
     }
-    const result = await db.accounts.deleteOne({ _id: accountId });
-    if (result.deletedCount) {
+    const result = await dbQueries.removeAccountById({ id: accountId });
+    if (result) {
       logger.Info('Queries', 'removeAccount', `account ${accountId} removed`);
     } else {
-      throw new Error('failed to remove account ${accountId}');
+      throw new Error(`failed to remove account ${accountId}`);
     }
   } else {
     throw 'Not found account';
@@ -83,10 +94,10 @@ async function removeAccount({ accountId }) {
  * @return {Promise<Array<ProductIdAndAmount>>}
  */
 async function getAccountHolds({ accountId }) {
-  const result = await db.carts.find({ holder: accountId });
-
+  logger.Debug('Queries', 'getAccountHolds', `args: ${JSON.stringify({ accountId })}`);
+  const result = await dbQueries.findAllCartsByHolder({ holder: accountId });
   logger.Info('Queries', 'getAccountHolds', `get account's holded products: ${JSON.stringify(result)}`);
-  return result.map(({ product, amount }) => ({ product, amount }));
+  return result;
 }
 
 /**
@@ -107,11 +118,12 @@ async function getAccountHolds({ accountId }) {
  */
 async function addProduct({ name, amount }) {
   try {
-    const result = await db.products.create({ name, amount });
+    logger.Debug('Queries', 'addProduct', `args: ${JSON.stringify({ name, amount })}`);
+    const result = await dbQueries.addProduct({ name, amount });
     logger.Info('Queries', 'addProduct', `add new products: ${JSON.stringify(result)}`);
-    return { id: result.id };
+    return result;
   } catch (error) {
-    if (error.message.includes('E11000 duplicate key')) throw 'product collection already exists';
+    if (error.message.includes('duplicate key')) throw 'product collection already exists';
     throw error;
   }
 }
@@ -128,7 +140,8 @@ async function addProduct({ name, amount }) {
  * @return {Promise<Product>}
  */
 async function updateProductStock({ productId, amount }) {
-  const found = await db.products.findOneAndUpdate({ _id: productId }, { $inc: { amount } }, { new: true });
+  logger.Debug('Queries', 'updateProductStock', `args: ${JSON.stringify({ productId, amount })}`);
+  const found = await dbQueries.findProductByIdAndUpdateAmount({ id: productId, amount });
   if (found) {
     logger.Info('Queries', 'updateProductStock', `update product stock: ${JSON.stringify(found)}`);
     return { id: found.id, name: found.name, amount: found.amount };
@@ -153,13 +166,11 @@ async function updateProductStock({ productId, amount }) {
  * @return {Promise<Array<Product>}
  */
 async function listProducts({ productId, name }) {
-  const query = {};
-  if (productId) query._id = productId;
-  if (name) query.name = name;
-  const result = await db.products.find(query);
+  logger.Debug('Queries', 'listProducts', `args: ${JSON.stringify({ productId, name })}`);
+  const result = await dbQueries.findAllProducts({ id: productId, name });
   if (!result.length) throw 'Empty depot or found product';
   logger.Info('Queries', 'listProducts', `available stock: ${JSON.stringify(result)}`);
-  return result.map(({ id, name, amount }) => ({ id, name, amount }));
+  return result;
 }
 
 /**
@@ -181,16 +192,13 @@ async function listProducts({ productId, name }) {
  * @return {Promise<Cart>}
  */
 async function holdProduct({ accountId, productId, amount }) {
-  const account = await db.accounts.findById({ _id: accountId }).populate({ path: '_accountCart', match: { product: productId } });
+  logger.Debug('Queries', 'holdProduct', `args: ${JSON.stringify({ accountId, productId, amount })}`);
+  const account = await dbQueries.checkProductIfHoldByAccountId({ accountId, productId });
   if (account) {
-    if (!account._accountCart.length) {
-      const product = await db.products.findOneAndUpdate(
-        { _id: productId, amount: { $gte: amount } },
-        { $inc: { amount: -1 * amount } },
-        { new: true }
-      );
+    if (!account.holdThisProduct) {
+      const product = await dbQueries.findProductByIdAndUpdateAmountIfGTE({ id: productId, amount });
       if (product) {
-        const result = await db.carts.create({ holder: accountId, product: productId, amount });
+        const result = await dbQueries.holdInCart({ holder: accountId, product: productId, amount });
         logger.Info('Queries', 'holdProduct', `account ${accountId} holds ${amount} products ${productId}`);
         logger.Info('Queries', 'holdProduct', `remaining ${product.amount} products ${productId} in stock`);
         return { id: result.id, holder: result.holder, product: result.product, amount: result.amount };
@@ -211,16 +219,13 @@ async function holdProduct({ accountId, productId, amount }) {
  * @return {Promise<Cart>}
  */
 async function updateCartAmount({ accountId, productId, amount }) {
-  const account = await db.accounts.findById({ _id: accountId }).populate({ path: '_accountCart', match: { product: productId } });
+  logger.Debug('Queries', 'updateCartAmount', `args: ${JSON.stringify({ accountId, productId, amount })}`);
+  const account = await dbQueries.checkProductIfHoldByAccountId({ accountId, productId });
   if (account) {
-    if (account._accountCart.length) {
-      const product = await db.products.findOneAndUpdate(
-        { _id: productId, amount: { $gte: amount } },
-        { $inc: { amount: -1 * amount } },
-        { new: true }
-      );
+    if (account.holdThisProduct) {
+      const product = await dbQueries.findProductByIdAndUpdateAmountIfGTE({ id: productId, amount });
       if (product) {
-        const newData = await db.carts.findOneAndUpdate({ holder: accountId, product: productId }, { $inc: { amount } }, { new: true });
+        const newData = await dbQueries.findCartAndUpdateAmount({ holder: accountId, product: productId, amount });
         logger.Info('Queries', 'updateCartAmount', `account ${accountId} holds ${newData.amount} products ${productId}`);
         logger.Info('Queries', 'updateCartAmount', `remaining ${product.amount} products of ${product.name} (${productId}) in stock`);
         return { id: newData.id, holder: newData.holder, product: newData.product, amount: newData.amount };
@@ -235,14 +240,16 @@ async function updateCartAmount({ accountId, productId, amount }) {
   }
 }
 
-async function getProductHolders({ productId, name }) {
-  const query = {};
-  if (productId) query._id = productId;
-  if (name) query.name = name;
-  const found = await db.products.findOne(query);
+/**
+ * get holders list related to one product
+ * @param {ProductIDName} { productId, name }
+ */
+async function getProductHolders({ id, name }) {
+  logger.Debug('Queries', 'getProductHolders', `args: ${JSON.stringify({ id, name })}`);
+  const found = await dbQueries.findProduct({ id, name });
   if (found) {
-    const result = await db.carts.find({ product: found.id }).populate('_account');
-    return result.map((cart) => cart._account[0]);
+    const result = await dbQueries.findHoldersByProductId({ id: found.id });
+    return result;
   } else {
     throw 'Not found product';
   }
@@ -260,14 +267,19 @@ async function getProductHolders({ productId, name }) {
  * @return {AccountIDProductID} {accountId,productId}
  */
 async function moveCart({ accountId, productId }) {
-  const account = await db.accounts.findById({ _id: accountId });
+  logger.Debug('Queries', 'moveCart', `args: ${JSON.stringify({ accountId, productId })}`);
+  const account = await dbQueries.findAccount({ id: accountId });
   if (account) {
-    const product = await db.products.findById({ _id: productId });
+    const product = await dbQueries.findProduct({ id: productId });
     if (product) {
-      const cart = await db.carts.findOne({ holder: accountId, product: productId });
+      const cart = await dbQueries.findCart({ holder: accountId, product: productId });
       if (cart) {
-        await db.carts.deleteOne({ holder: accountId, product: productId });
-        logger.Info('Queries', 'holdProduct', `account ${accountId} move out holded products ${product.name} ${productId}`);
+        const result = await dbQueries.removeCart({ holder: accountId, product: productId });
+        if (result) {
+          logger.Info('Queries', 'moveCart', `account ${accountId} move out holded products ${product.name} ${productId}`);
+        } else {
+          throw new Error(`failed to remove cart for holder :${accountId}  product: ${productId}`);
+        }
         return { id: cart.id, holder: cart.holder, product: cart.product, amount: 0 };
       } else {
         throw `account ${accountId} doesn't hold those kind of product ${productId}`;
@@ -291,5 +303,6 @@ module.exports = {
   holdProduct,
   getProductHolders,
   updateCartAmount,
-  moveCart
+  moveCart,
+  dbQueries: config.common.nodeEnv === 'test' ? dbQueries : null
 };

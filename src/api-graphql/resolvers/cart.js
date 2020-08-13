@@ -5,18 +5,18 @@ const queries = require('../../services/queries');
 
 module.exports = {
   Cart: {
-    id: (parent) => {
+    id: parent => {
       return parent.id;
     },
-    amount: (parent) => {
+    amount: parent => {
       return parent.amount;
     },
-    holder: async (parent) => {
+    holder: async parent => {
       return await queries.getAccount({ accountId: parent.holder });
     },
-    product: async (parent) => {
+    product: async parent => {
       const result = await queries.listProducts({ productId: parent.product });
-      return result.find((product) => product.id === parent.product);
+      return result.find(product => product.id.toString() === parent.product.toString());
     }
   },
   Mutation: {

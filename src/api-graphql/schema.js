@@ -1,5 +1,7 @@
-// const { makeExecutableSchema } = require('apollo-server-express');
-const { makeExecutableSchema } = require('graphql-tools');
+'use strict';
+
+const { makeExecutableSchema } = require('apollo-server-express');
+// const { makeExecutableSchema } = require('graphql-tools');
 
 //https://www.graphql-tools.com/docs/api/modules/schema/#makeexecutableschema
 // it can deep merge resolvers.

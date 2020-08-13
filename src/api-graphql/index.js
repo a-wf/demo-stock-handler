@@ -16,10 +16,10 @@ class GraphqlAPI {
     const enableDoc = config.common.nodeEnv === 'development' ? true : false;
 
     createToken({ username: config.server.adminLogin, password: config.server.adminPassword })
-      .then((token) => {
+      .then(token => {
         logger.Debug('GraphqlAPI', 'Init', `API admin token: 'Bearer ${token}', to provide in 'Authorization' header`); // log it for dev and test mode
       })
-      .catch((error) => {
+      .catch(error => {
         logger.Error('GraphqlAPI', 'Init', `failed to generate token for API: ${error.stack}`);
       });
 
@@ -29,7 +29,7 @@ class GraphqlAPI {
       schema,
       context: async ({ req }) => {
         try {
-          const tokenWithBearer = req.headers.authorization || '';
+          const tokenWithBearer = req.get('authorization') || '';
           const token = tokenWithBearer.split(' ')[1];
           let authValidated = false;
           if (!token) return { authValidated };
