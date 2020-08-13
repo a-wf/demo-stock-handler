@@ -1,3 +1,5 @@
+'use strict';
+
 const { gql } = require('apollo-server-express');
 
 module.exports = gql`
@@ -29,7 +31,7 @@ module.exports = gql`
 
   type Mutation {
     addAccount(username: String!): Account
-    removeAccount(accountId: ID!): ID
+    removeAccount(accountId: ID!): String
 
     addProduct(name: String!, amount: Int!): Product
     updateProductStock(productId: ID!, amount: Int!): Product

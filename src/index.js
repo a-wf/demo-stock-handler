@@ -47,7 +47,7 @@ process
       console.error(reason, 'Unhandled Rejection at Promise', promise);
     }
   })
-  .on('uncaughtException', (error) => {
+  .on('uncaughtException', error => {
     if (logger) {
       logger.Error('Process', 'uncaughtException', error.stack);
     } else {
@@ -56,7 +56,7 @@ process
     }
   });
 
-['SIGINT', 'SIGTERM', 'SIGQUIT'].forEach((signal) =>
+['SIGINT', 'SIGTERM', 'SIGQUIT'].forEach(signal =>
   process.on(signal, async () => {
     if (logger) {
       logger.Info('Process', 'onSIGTERM', `stoping service`);

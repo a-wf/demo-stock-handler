@@ -11,13 +11,13 @@ module.exports = {
     }
   },
   Product: {
-    id: (parent) => {
+    id: parent => {
       return parent.id;
     },
-    name: (parent) => {
+    name: parent => {
       return parent.name;
     },
-    amount: (parent) => {
+    amount: parent => {
       return parent.amount;
     },
     getProductHolders: async (parent, args, context) => {
@@ -51,7 +51,6 @@ module.exports = {
         return new AuthenticationError('must be authenticated as admin');
       }
       const { productId, amount } = args;
-
       if (!productId || !amount) return new UserInputError('Bad parameters');
       return await queries.updateProductStock({ productId, amount });
     }

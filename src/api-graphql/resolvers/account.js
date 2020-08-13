@@ -41,7 +41,7 @@ module.exports = {
      * @param {AccountID} parent
      * @return {string} id
      */
-    id: (parent) => {
+    id: parent => {
       return parent.id;
     },
     /**
@@ -53,7 +53,7 @@ module.exports = {
      * @param {AccountUsername} username
      * @return {string} username
      */
-    username: (parent) => {
+    username: parent => {
       return parent.username;
     },
 
@@ -62,7 +62,7 @@ module.exports = {
      * @param {AccountID} id
      * @return {Array<Cart>}
      */
-    getAccountHolds: async (parent) => {
+    getAccountHolds: async parent => {
       return await queries.getAccountHolds({ accountId: parent.id });
     }
   },
@@ -109,6 +109,7 @@ module.exports = {
 
       if (!accountId) return new UserInputError('Bad parameters');
       await queries.removeAccount({ accountId });
+      return 'OK';
     }
   }
 };

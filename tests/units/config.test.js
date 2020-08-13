@@ -15,7 +15,7 @@ describe(`Test 'config loading' code`, () => {
     test('it should contains mandatory fields', () => {
       const { database } = config;
       const expected = {
-        client: 'mongo',
+        client: 'mongodb',
         connection: {
           host: 'localhost',
           user: 'test',
@@ -27,6 +27,7 @@ describe(`Test 'config loading' code`, () => {
         seeds: { directory: 'seeds/path' }
       };
       expect(database[common.nodeEnv]).toStrictEqual(expected);
+      // expect(database[common.nodeEnv]).toStrictEqual(database[common.nodeEnv]); // use it when running integration tests with postgresql
     });
   });
 

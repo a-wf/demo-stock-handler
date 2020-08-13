@@ -36,16 +36,32 @@ paths:
       responses:
         '200':
           description: OK
+          headers:
+            X-REQUEST-ID:
+              schema:
+                type: string
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/newAddedRes'
         401:
           description: Unauthorized
+          headers:
+            X-REQUEST-ID:
+              schema:
+                type: string
         403:
           description: Forbidden
+          headers:
+            X-REQUEST-ID:
+              schema:
+                type: string
         500:
           description: Internal error
+          headers:
+            X-REQUEST-ID:
+              schema:
+                type: string
           content:
             application/json:
               schema:
@@ -80,16 +96,28 @@ paths:
       responses:
         '200':
           description: OK
-          content:
-            application/json:
+          headers:
+            X-REQUEST-ID:
               schema:
-                $ref: '#/components/schemas/Response'
+                type: string
         401:
           description: Unauthorized
+          headers:
+            X-REQUEST-ID:
+              schema:
+                type: string
         403:
           description: Forbidden
+          headers:
+            X-REQUEST-ID:
+              schema:
+                type: string
         500:
           description: Internal error
+          headers:
+            X-REQUEST-ID:
+              schema:
+                type: string
           content:
             application/json:
               schema:
@@ -123,16 +151,32 @@ paths:
       responses:
         '200':
           description: OK
+          headers:
+            X-REQUEST-ID:
+              schema:
+                type: string
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/newAddedRes'
         401:
           description: Unauthorized
+          headers:
+            X-REQUEST-ID:
+              schema:
+                type: string
         403:
           description: Forbidden
+          headers:
+            X-REQUEST-ID:
+              schema:
+                type: string
         500:
           description: Internal error
+          headers:
+            X-REQUEST-ID:
+              schema:
+                type: string
           content:
             application/json:
               schema:
@@ -171,16 +215,28 @@ paths:
       responses:
         '200':
           description: OK
-          content:
-            application/json:
+          headers:
+            X-REQUEST-ID:
               schema:
-                $ref: '#/components/schemas/Response'
+                type: string
         401:
           description: Unauthorized
+          headers:
+            X-REQUEST-ID:
+              schema:
+                type: string
         403:
           description: Forbidden
+          headers:
+            X-REQUEST-ID:
+              schema:
+                type: string
         500:
           description: Internal error
+          headers:
+            X-REQUEST-ID:
+              schema:
+                type: string
           content:
             application/json:
               schema:
@@ -221,12 +277,16 @@ paths:
       responses:
         '200':
           description: OK
-          content:
-            application/json:
+          headers:
+            X-REQUEST-ID:
               schema:
-                $ref: '#/components/schemas/Response'
+                type: string
         500:
           description: Internal error
+          headers:
+            X-REQUEST-ID:
+              schema:
+                type: string
           content:
             application/json:
               schema:
@@ -266,12 +326,16 @@ paths:
       responses:
         '200':
           description: OK
-          content:
-            application/json:
+          headers:
+            X-REQUEST-ID:
               schema:
-                $ref: '#/components/schemas/Response'
+                type: string
         500:
           description: Internal error
+          headers:
+            X-REQUEST-ID:
+              schema:
+                type: string
           content:
             application/json:
               schema:
@@ -306,12 +370,16 @@ paths:
       responses:
         '200':
           description: OK
-          content:
-            application/json:
+          headers:
+            X-REQUEST-ID:
               schema:
-                $ref: '#/components/schemas/Response'
+                type: string
         500:
           description: Internal error
+          headers:
+            X-REQUEST-ID:
+              schema:
+                type: string
           content:
             application/json:
               schema:
@@ -342,12 +410,20 @@ paths:
       responses:
         '200':
           description: OK
+          headers:
+            X-REQUEST-ID:
+              schema:
+                type: string
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/productListRes'
         500:
           description: Internal error
+          headers:
+            X-REQUEST-ID:
+              schema:
+                type: string
           content:
             application/json:
               schema:
@@ -373,12 +449,20 @@ paths:
       responses:
         '200':
           description: OK
+          headers:
+            X-REQUEST-ID:
+              schema:
+                type: string
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/productListRes'
         500:
           description: Internal error
+          headers:
+            X-REQUEST-ID:
+              schema:
+                type: string
           content:
             application/json:
               schema:
@@ -389,11 +473,6 @@ components:
       type: http
       scheme: basic
   schemas:
-    Response:
-      type: object
-      properties:
-        request-id:
-          type: string
     Error:
       type: object
       required:
@@ -403,8 +482,6 @@ components:
           type: integer
           format: int32
         data:
-          type: string
-        request-id:
           type: string
       title: Error
     productStock:
@@ -429,8 +506,6 @@ components:
       required:
         - data
       properties:
-        request-id:
-          type: string
         data:
           type: array
           items:
@@ -455,8 +530,6 @@ components:
       required:
         - data
       properties:
-        request-id:
-          type: string
         data:
           type: object
           required:

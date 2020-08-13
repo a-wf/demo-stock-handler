@@ -1,19 +1,20 @@
 {
   "name": "products-depot-handler",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "description": "a stock handler for products",
   "main": "index.js",
   "license": "Unlicense",
   "scripts": {
     "lint": "eslint '*/**/*.js' --quiet",
     "lint-fix": "eslint '*/**/*.js' --quiet --fix",
-    "prettier-format": "prettier --config .prettierrc 'src/**/*js' --write",
+    "prettier": "prettier --config .prettierrc 'src/**/*js' --write",
     "start": "NODE_ENV=production node src/index.js",
     "dev": "NODE_ENV=development nodemon src/index.js",
     "test": "jest --coverage",
-    "build": "mkdir -p build; ncp src/ build/; cp package.json build/; yarn build-docker; yarn save-docker",
-    "build-docker": "docker build . -t docker_products_depot_handler:1.0.0",
-    "save-docker": " docker save docker_products_depot_handler:1.0.0 > docker_products_depot_handler_1.0.0.img"
+    "build": "rm -rf build; mkdir -p build; cp -rf src/ build/; cp package.json build/package.json; yarn build-docker; yarn save-docker",
+    "build-docker": "docker build . -t docker_products_depot_handler:3.0.0",
+    "save-docker": "rm -f docker_products_depot_handler_3.0.0.img; docker save docker_products_depot_handler:3.0.0 > docker_products_depot_handler_3.0.0.img",
+    "knex:migration": "knex --knexfile ./src/database/postgresql/knexfile.js migrate:latest"
   },
   "husky": {
     "hooks": {
@@ -30,16 +31,19 @@
   },
   "dependencies": {
     "@hapi/joi": "17.1.1",
-    "apollo-server-express": "^2.16.1",
-    "bcryptjs": "^2.4.3",
+    "apollo-server-express": "2.16.1",
+    "bcryptjs": "2.4.3",
     "cors": "2.8.5",
     "dotenv": "8.2.0",
     "express": "4.17.1",
     "express-basic-auth": "1.2.0",
     "express-openapi-validator": "3.16.8",
     "express-prom-bundle": "6.1.0",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "8.5.1",
+    "knex": "0.21.4",
     "mongoose": "5.9.28",
+    "objection": "2.2.2",
+    "pg": "8.3.0",
     "prom-client": "12.0.0",
     "rate-limiter-flexible": "2.1.10",
     "swagger-ui-express": "4.1.4",
@@ -49,11 +53,12 @@
     "eslint": "7.6.0",
     "eslint-config-prettier": "6.11.0",
     "eslint-plugin-prettier": "3.1.4",
-    "jest": "^26.2.2",
-    "mock-require": "^3.0.3",
-    "mongodb-memory-server": "^6.6.3",
+    "jest": "26.2.2",
+    "mock-require": "3.0.3",
+    "mongodb-memory-server": "6.6.3",
     "nodemon": "2.0.4",
     "prettier": "2.0.5",
-    "supertest": "^4.0.2"
+    "randomstring": "1.1.5",
+    "supertest": "4.0.2"
   }
 }

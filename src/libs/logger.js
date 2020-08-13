@@ -1,6 +1,6 @@
 'use strict';
 
-var Winston = require('winston');
+const Winston = require('winston');
 const { common, logger } = require('./../config');
 
 var logLevels = { error: 0, warn: 1, info: 2, debug: 3 };
@@ -57,7 +57,7 @@ class Logger {
             Winston.format.timestamp({
               format: 'YYYY-MM-DD HH:mm:ss'
             }),
-            config.jsonFormat ? Winston.format.json() : Winston.format.simple()
+            Winston.format.printf(({ level, message, label, timestamp }) => `${timestamp} ${level} [${label}]: ${message}`)
           )
         })
       ]

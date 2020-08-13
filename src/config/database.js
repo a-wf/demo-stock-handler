@@ -4,15 +4,15 @@ const Joi = require('@hapi/joi');
 const path = require('path');
 
 const envVarsSchema = Joi.object({
-  DATABASE_TYPE: Joi.string().default('mongo'),
+  DATABASE_TYPE: Joi.string().valid('mongodb', 'postgresql').default('postgresql'),
   DATABASE_HOST: Joi.string().default('localhost'),
-  DATABASE_USERNAME: Joi.string(),
-  DATABASE_PASSWORD: Joi.string(),
+  DATABASE_USERNAME: Joi.string().default('postgres'),
+  DATABASE_PASSWORD: Joi.string().default('postgres'),
   DATABASE_NAME: Joi.string().default('products_depot_db'),
   DATABASE_POOL_MIN: Joi.number().default(2),
   DATABASE_POOL_MAX: Joi.number().default(10),
-  DATABASE_MIGRATIONS_PATH: Joi.string().default(path.join(__dirname, './../database/migrations')),
-  DATABASE_SEEDS_PATH: Joi.string().default(path.join(__dirname, './../database/seeds'))
+  DATABASE_MIGRATIONS_PATH: Joi.string().default(path.join(__dirname, './../database/postgresql/migrations')),
+  DATABASE_SEEDS_PATH: Joi.string().default(path.join(__dirname, './../database/postgresql/seeds'))
 })
   .unknown()
   .required();
