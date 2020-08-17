@@ -1,7 +1,21 @@
 import config from './../../config';
 import { logger } from './../../libs/logger';
+import {
+  AccountNameInterfaceType,
+  AccountIdInterfaceType,
+  AccountInterfaceType,
+  ProductIdInterfaceType,
+  ProductInterfaceType,
+  ProductWithoutIdInterfaceType,
+  ProductIdAndNameInterfaceType,
+  CartInterfaceType,
+  AccountIdProductIdInterfaceType,
+  CheckResultHoldThisProduct,
+  CartWithoutIdInterfaceType,
+  CartsInterfaceType
+} from 'param-models';
 
-let dbQueries;
+let dbQueries: any;
 
 switch (config.database[config.common.nodeEnv].client) {
   case 'mongodb':
@@ -24,10 +38,10 @@ switch (config.database[config.common.nodeEnv].client) {
  * @param {accountUserName} {username}
  * @return {Promise<AccountID>}
  */
-async function addAccount({ username }) {
+async function addAccount({ username }: AccountNameInterfaceType): Promise<AccountIdInterfaceType> {
   try {
     logger.Debug('Queries', 'addAccount', `args: ${JSON.stringify({ username })}`);
-    const result = await dbQueries.addAccount({ username });
+    const result: AccountIdInterfaceType = await dbQueries.addAccount({ username });
     logger.Info('Queries', 'addAccount', `Add new account: ${JSON.stringify(result)}`);
     return result;
   } catch (error) {
@@ -48,9 +62,9 @@ async function addAccount({ username }) {
  * @param {accountIDUserName} {username}
  * @return {Promise<AccountID>}
  */
-async function getAccount({ accountId, username }) {
+async function getAccount({ accountId, username }: { accountId: string | number; username: string }): Promise<AccountInterfaceType> {
   logger.Debug('Queries', 'getAccount', `args: ${JSON.stringify({ accountId, username })}`);
-  const result = await dbQueries.findAccount({ id: accountId, username });
+  const result: AccountInterfaceType = await dbQueries.findAccount({ id: accountId, username });
   // tslint:disable-next-line: no-string-throw
   if (!result) throw 'Not found account';
   return { id: result.id, username: result.username };
@@ -66,20 +80,20 @@ async function getAccount({ accountId, username }) {
  * @param {AccountID} {accountId}
  * @return {Promise<void>}
  */
-async function removeAccount({ accountId }) {
+async function removeAccount({ accountId }: { accountId: string | number }): Promise<void> {
   logger.Debug('Queries', 'removeAccount', `args: ${JSON.stringify({ accountId })}`);
-  const account = await dbQueries.getAccountByIdAndCarts({ id: accountId });
+  const account: CartsInterfaceType = await dbQueries.getAccountByIdAndCarts({ id: accountId });
   if (account) {
     if (account.carts.length) {
       await Promise.all(
-        account.carts.map(async element => {
+        account.carts.map(async (element: { product: string | number; amount: number }) => {
           await dbQueries.deleteCartsByHolder({ holder: accountId });
           const product = await dbQueries.findProductByIdAndUpdateAmount({ id: element.product, amount: element.amount });
           logger.Info('Queries', 'removeAccount', `remaining ${product.amount} products ${product.id} in stock`);
         })
       );
     }
-    const result = await dbQueries.removeAccountById({ id: accountId });
+    const result: boolean = await dbQueries.removeAccountById({ id: accountId });
     if (result) {
       logger.Info('Queries', 'removeAccount', `account ${accountId} removed`);
     } else {
@@ -94,11 +108,11 @@ async function removeAccount({ accountId }) {
 /**
  * get list of products holded by account from database
  * @param {AccountID} {accountId}
- * @return {Promise<Array<ProductIdAndAmount>>}
+ * @return {Promise<Array<CartWithoutID>>}
  */
-async function getAccountHolds({ accountId }) {
+async function getAccountHolds({ accountId }: { accountId: string | number }): Promise<CartWithoutIdInterfaceType[]> {
   logger.Debug('Queries', 'getAccountHolds', `args: ${JSON.stringify({ accountId })}`);
-  const result = await dbQueries.findAllCartsByHolder({ holder: accountId });
+  const result: CartWithoutIdInterfaceType[] = await dbQueries.findAllCartsByHolder({ holder: accountId });
   logger.Info('Queries', 'getAccountHolds', `get account's holded products: ${JSON.stringify(result)}`);
   return result;
 }
@@ -119,10 +133,10 @@ async function getAccountHolds({ accountId }) {
  * @param {ProductNameAndAmount} {name,amount}
  * @return {Promise<ProductID>}
  */
-async function addProduct({ name, amount }) {
+async function addProduct({ name, amount }: ProductWithoutIdInterfaceType): Promise<ProductIdInterfaceType> {
   try {
     logger.Debug('Queries', 'addProduct', `args: ${JSON.stringify({ name, amount })}`);
-    const result = await dbQueries.addProduct({ name, amount });
+    const result: ProductIdInterfaceType = await dbQueries.addProduct({ name, amount });
     logger.Info('Queries', 'addProduct', `add new products: ${JSON.stringify(result)}`);
     return result;
   } catch (error) {
@@ -143,9 +157,9 @@ async function addProduct({ name, amount }) {
  * @param {ProductIdAndAmount} {productId,amount}
  * @return {Promise<Product>}
  */
-async function updateProductStock({ productId, amount }) {
+async function updateProductStock({ productId, amount }: { productId: number | string; amount: number }): Promise<ProductInterfaceType> {
   logger.Debug('Queries', 'updateProductStock', `args: ${JSON.stringify({ productId, amount })}`);
-  const found = await dbQueries.findProductByIdAndUpdateAmount({ id: productId, amount });
+  const found: ProductInterfaceType = await dbQueries.findProductByIdAndUpdateAmount({ id: productId, amount });
   if (found) {
     logger.Info('Queries', 'updateProductStock', `update product stock: ${JSON.stringify(found)}`);
     return { id: found.id, name: found.name, amount: found.amount };
@@ -170,9 +184,9 @@ async function updateProductStock({ productId, amount }) {
  * @param {ProductIDName} {productId,name}
  * @return {Promise<Array<Product>}
  */
-async function listProducts({ productId, name }) {
+async function listProducts({ productId, name }: { productId: number | string; name: string }): Promise<ProductInterfaceType[]> {
   logger.Debug('Queries', 'listProducts', `args: ${JSON.stringify({ productId, name })}`);
-  const result = await dbQueries.findAllProducts({ id: productId, name });
+  const result: ProductInterfaceType[] = await dbQueries.findAllProducts({ id: productId, name });
   // tslint:disable-next-line: no-string-throw
   if (!result.length) throw 'Empty depot or found product';
   logger.Info('Queries', 'listProducts', `available stock: ${JSON.stringify(result)}`);
@@ -197,14 +211,22 @@ async function listProducts({ productId, name }) {
  * @param {CartWithoutID} {accountId,productId,amount}
  * @return {Promise<Cart>}
  */
-async function holdProduct({ accountId, productId, amount }) {
+async function holdProduct({
+  accountId,
+  productId,
+  amount
+}: {
+  accountId: string | number;
+  productId: string | number;
+  amount: number;
+}): Promise<CartInterfaceType> {
   logger.Debug('Queries', 'holdProduct', `args: ${JSON.stringify({ accountId, productId, amount })}`);
-  const account = await dbQueries.checkProductIfHoldByAccountId({ accountId, productId });
+  const account: CheckResultHoldThisProduct = await dbQueries.checkProductIfHoldByAccountId({ accountId, productId });
   if (account) {
     if (!account.holdThisProduct) {
-      const product = await dbQueries.findProductByIdAndUpdateAmountIfGTE({ id: productId, amount });
+      const product: ProductInterfaceType = await dbQueries.findProductByIdAndUpdateAmountIfGTE({ id: productId, amount });
       if (product) {
-        const result = await dbQueries.holdInCart({ holder: accountId, product: productId, amount });
+        const result: CartInterfaceType = await dbQueries.holdInCart({ holder: accountId, product: productId, amount });
         logger.Info('Queries', 'holdProduct', `account ${accountId} holds ${amount} products ${productId}`);
         logger.Info('Queries', 'holdProduct', `remaining ${product.amount} products ${productId} in stock`);
         return { id: result.id, holder: result.holder, product: result.product, amount: result.amount };
@@ -227,14 +249,22 @@ async function holdProduct({ accountId, productId, amount }) {
  * @param {Cart} {accountId,productId,amount}
  * @return {Promise<Cart>}
  */
-async function updateCartAmount({ accountId, productId, amount }) {
+async function updateCartAmount({
+  accountId,
+  productId,
+  amount
+}: {
+  accountId: string | number;
+  productId: string | number;
+  amount: number;
+}): Promise<CartInterfaceType> {
   logger.Debug('Queries', 'updateCartAmount', `args: ${JSON.stringify({ accountId, productId, amount })}`);
-  const account = await dbQueries.checkProductIfHoldByAccountId({ accountId, productId });
+  const account: CheckResultHoldThisProduct = await dbQueries.checkProductIfHoldByAccountId({ accountId, productId });
   if (account) {
     if (account.holdThisProduct) {
-      const product = await dbQueries.findProductByIdAndUpdateAmountIfGTE({ id: productId, amount });
+      const product: ProductInterfaceType = await dbQueries.findProductByIdAndUpdateAmountIfGTE({ id: productId, amount });
       if (product) {
-        const newData = await dbQueries.findCartAndUpdateAmount({ holder: accountId, product: productId, amount });
+        const newData: CartInterfaceType = await dbQueries.findCartAndUpdateAmount({ holder: accountId, product: productId, amount });
         logger.Info('Queries', 'updateCartAmount', `account ${accountId} holds ${newData.amount} products ${productId}`);
         logger.Info('Queries', 'updateCartAmount', `remaining ${product.amount} products of ${product.name} (${productId}) in stock`);
         return { id: newData.id, holder: newData.holder, product: newData.product, amount: newData.amount };
@@ -256,11 +286,11 @@ async function updateCartAmount({ accountId, productId, amount }) {
  * get holders list related to one product
  * @param {ProductIDName} { productId, name }
  */
-async function getProductHolders({ id, name }) {
+async function getProductHolders({ id, name }: ProductIdAndNameInterfaceType): Promise<AccountInterfaceType> {
   logger.Debug('Queries', 'getProductHolders', `args: ${JSON.stringify({ id, name })}`);
   const found = await dbQueries.findProduct({ id, name });
   if (found) {
-    const result = await dbQueries.findHoldersByProductId({ id: found.id });
+    const result: AccountInterfaceType = await dbQueries.findHoldersByProductId({ id: found.id });
     return result;
   } else {
     // tslint:disable-next-line: no-string-throw
@@ -279,15 +309,15 @@ async function getProductHolders({ id, name }) {
  * @param {AccountIDProductID} {accountId,productId}
  * @return {AccountIDProductID} {accountId,productId}
  */
-async function moveCart({ accountId, productId }) {
+async function moveCart({ accountId, productId }: AccountIdProductIdInterfaceType): Promise<CartInterfaceType> {
   logger.Debug('Queries', 'moveCart', `args: ${JSON.stringify({ accountId, productId })}`);
-  const account = await dbQueries.findAccount({ id: accountId });
+  const account: AccountInterfaceType = await dbQueries.findAccount({ id: accountId });
   if (account) {
-    const product = await dbQueries.findProduct({ id: productId });
+    const product: ProductInterfaceType = await dbQueries.findProduct({ id: productId });
     if (product) {
-      const cart = await dbQueries.findCart({ holder: accountId, product: productId });
+      const cart: CartInterfaceType = await dbQueries.findCart({ holder: accountId, product: productId });
       if (cart) {
-        const result = await dbQueries.removeCart({ holder: accountId, product: productId });
+        const result: boolean = await dbQueries.removeCart({ holder: accountId, product: productId });
         if (result) {
           logger.Info('Queries', 'moveCart', `account ${accountId} move out holded products ${product.name} ${productId}`);
         } else {

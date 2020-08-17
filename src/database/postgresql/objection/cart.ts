@@ -3,6 +3,11 @@ import Account from './account';
 import Product from './product';
 
 class Cart extends Model {
+  id: number;
+  holder: number;
+  product: number;
+  amount: number;
+
   static get tableName() {
     return 'carts';
   }

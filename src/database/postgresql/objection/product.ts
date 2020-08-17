@@ -2,6 +2,10 @@ import { Model } from 'objection';
 import Cart from './cart';
 
 class Product extends Model {
+  id: number;
+  name: string;
+  amount: number;
+
   static get tableName() {
     return 'products';
   }

@@ -2,6 +2,9 @@ import { Model } from 'objection';
 import Cart from './cart';
 
 class Account extends Model {
+  id: number;
+  username: string;
+
   static get tableName() {
     return 'accounts';
   }

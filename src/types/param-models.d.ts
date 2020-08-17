@@ -23,6 +23,11 @@ declare module 'param-models' {
     amount: number;
   }
 
+  export interface ProductWithoutIdInterfaceType {
+    name: string;
+    amount: number;
+  }
+
   export interface ProductOptionalInterfaceType {
     id?: string | number;
     name?: string;
@@ -41,11 +46,36 @@ declare module 'param-models' {
     amount: number;
   }
 
+  export interface ProductIdAndAmountInterfaceType {
+    id: string | number;
+    amount: number;
+  }
+
+  export interface ProductIdAndNameInterfaceType {
+    id: string | number;
+    name: string;
+  }
+
   export interface CartInterfaceType {
     id: string | number;
     holder: string | number;
     product: string | number;
     amount: number;
+  }
+
+  export interface CartWithoutIdInterfaceType {
+    holder: string | number;
+    product: string | number;
+    amount: number;
+  }
+
+  export interface CartHolderAndProductInterfaceType {
+    holder: string | number;
+    product: string | number;
+  }
+
+  export interface CartsInterfaceType {
+    carts: CartInterfaceType[];
   }
 
   export interface CartOptionalInterfaceType {
@@ -69,5 +99,14 @@ declare module 'param-models' {
 
   export interface CartAmountInterfaceType {
     amount: number;
+  }
+
+  export interface AccountIdProductIdInterfaceType {
+    accountId: string | number;
+    productId: string | number;
+  }
+
+  export interface CheckResultHoldThisProduct {
+    holdThisProduct: boolean;
   }
 }

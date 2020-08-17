@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import { common, database } from '../../config';
 import { logger } from '../../libs/logger';
 
-export * as models from './models';
+import { accounts, products, carts } from './models';
 
 const dbConfig = database[common.nodeEnv].connection;
 let client: mongoose.Connection;
@@ -46,4 +46,4 @@ if (common.nodeEnv !== 'test') {
   });
 }
 
-export default { client };
+export default { client, accounts, products, carts };

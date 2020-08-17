@@ -1,3 +1,5 @@
-export * as accounts from './account';
-export * as products from './product';
-export * as carts from './cart';
+import accounts from './account';
+import products from './product';
+import carts from './cart';
+
+export default { accounts, products, carts };

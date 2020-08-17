@@ -1,5 +1,25 @@
-import db from './../../database';
-
+import db from './../../database/postgresql';
+import {
+  AccountNameInterfaceType,
+  AccountOptionalInterfaceType,
+  AccountIdInterfaceType,
+  CartHolderInterfaceType,
+  ProductIdAndAmountInterfaceType,
+  AccountInterfaceType,
+  CartsInterfaceType,
+  ProductInterfaceType,
+  CartWithoutIdInterfaceType,
+  ProductWithoutIdInterfaceType,
+  ProductIdInterfaceType,
+  ProductIdAndNameInterfaceType,
+  AccountIdProductIdInterfaceType,
+  CheckResultHoldThisProduct,
+  CartInterfaceType,
+  CartHolderAndProductInterfaceType
+} from 'param-models';
+import Product from '../../database/postgresql/objection/product';
+import Account from '../../database/postgresql/objection/account';
+import Cart from '../../database/postgresql/objection/cart';
 /**
  * @typedef {object} AccountID
  * @property {string } id account uuid - ObjectId
@@ -13,8 +33,8 @@ import db from './../../database';
  * @param {accountUserName} {username}
  * @return {Promise<AccountID>}
  */
-async function addAccount({ username }) {
-  const result = await db.Account.query().allowGraph('username').insertGraph({ username });
+async function addAccount({ username }: AccountNameInterfaceType): Promise<AccountIdInterfaceType> {
+  const result: Account = await db.Account.query().allowGraph('username').insertGraph({ username }, { allowRefs: true });
   return result ? { id: result.id.toString() } : null;
 }
 
@@ -28,8 +48,8 @@ async function addAccount({ username }) {
  * @param {accountIDUserName} { accountId, username }
  * @return {Promise<accountIDUserName>}
  */
-async function findAccount({ id, username }) {
-  let result;
+async function findAccount({ id, username }: AccountOptionalInterfaceType): Promise<AccountInterfaceType> {
+  let result: Account | Account[];
   if (id) {
     result = await db.Account.query().findById(id);
   } else if (username) {
@@ -37,7 +57,9 @@ async function findAccount({ id, username }) {
   } else {
     result = await db.Account.query();
   }
-  return result ? { id: result.id.toString(), username: result.username } : null;
+  return Array.isArray(result)
+    ? { id: result[0].id.toString(), username: result[0].username }
+    : { id: result.id.toString(), username: result.username };
 }
 
 /**
@@ -49,16 +71,18 @@ async function findAccount({ id, username }) {
  * @param {AccountID}
  * @return {Promise<CartsObject>}
  */
-async function getAccountByIdAndCarts({ id }) {
+async function getAccountByIdAndCarts({ id }: AccountIdInterfaceType): Promise<CartsInterfaceType> {
   const account = await db.Account.query().findById(id);
 
-  let carts = account.$relatedQuery('carts');
+  const carts: Cart[] = await db.Cart.query().where('holder', id);
 
-  carts = await db.Account.relatedQuery('carts').for(id);
-
-  carts = await db.Cart.query().where('holder', id);
-
-  return account ? { carts } : null;
+  return account
+    ? {
+        carts: carts.map(obj => {
+          return { id: obj.id, holder: obj.holder, product: obj.product, amount: obj.amount };
+        })
+      }
+    : null;
 }
 
 /**
@@ -70,7 +94,7 @@ async function getAccountByIdAndCarts({ id }) {
  * @param {HolderID}
  * @return {Promise<void>}
  */
-async function deleteCartsByHolder({ holder }) {
+async function deleteCartsByHolder({ holder }: CartHolderInterfaceType): Promise<void> {
   await db.Cart.query().delete().where('holder', holder);
 }
 
@@ -79,7 +103,7 @@ async function deleteCartsByHolder({ holder }) {
  * @param {ProductIdAndAmount}
  * @return {Promise<Product>}
  */
-async function findProductByIdAndUpdateAmount({ id, amount }) {
+async function findProductByIdAndUpdateAmount({ id, amount }: ProductIdAndAmountInterfaceType): Promise<ProductInterfaceType> {
   const result = await db.Product.query().increment('amount', amount).where('id', id).returning('*'); // knex methods
   return result && result.length ? { id: result[0].id.toString(), name: result[0].name, amount: result[0].amount } : null;
 }
@@ -89,7 +113,7 @@ async function findProductByIdAndUpdateAmount({ id, amount }) {
  * @param {AccountID}
  * @return {Promise<boolean>}
  */
-async function removeAccountById({ id }) {
+async function removeAccountById({ id }: AccountIdInterfaceType): Promise<boolean> {
   const result = await db.Account.query().deleteById(id);
 
   return !!result;
@@ -105,10 +129,12 @@ async function removeAccountById({ id }) {
  * @param {HolderID} {holder}
  * @return {Promise<Array<ProductIdAndAmount>>}
  */
-async function findAllCartsByHolder({ holder }) {
+async function findAllCartsByHolder({ holder }: CartHolderInterfaceType): Promise<CartWithoutIdInterfaceType[]> {
   const result = await db.Cart.query().where('holder', holder);
 
-  return result ? result.map(({ holder, product, amount }) => ({ holder: holder.toString(), product: product.toString(), amount })) : null;
+  return result
+    ? result.map((obj: CartWithoutIdInterfaceType) => ({ holder: obj.holder.toString(), product: obj.product.toString(), amount: obj.amount }))
+    : null;
 }
 
 /**
@@ -127,8 +153,8 @@ async function findAllCartsByHolder({ holder }) {
  * @param {ProductNameAndAmount} {name,amount}
  * @return {Promise<ProductID>}
  */
-async function addProduct({ name, amount }) {
-  const result = await db.Product.query().allowGraph(['name', 'amount']).insertGraph({ name, amount });
+async function addProduct({ name, amount }: ProductWithoutIdInterfaceType): Promise<ProductIdInterfaceType> {
+  const result = await db.Product.query().allowGraph(['name', 'amount']).insertGraph({ name, amount }, { allowRefs: true });
 
   return { id: result.id };
 }
@@ -156,7 +182,7 @@ async function addProduct({ name, amount }) {
  * @param {ProductIDName} {id,name}
  * @return {Promise<Array<Product>}
  */
-async function findAllProducts({ id, name }) {
+async function findAllProducts({ id, name }: ProductIdAndNameInterfaceType): Promise<ProductInterfaceType[]> {
   let result;
   if (id) {
     result = [await db.Product.query().findById(id)];
@@ -166,7 +192,7 @@ async function findAllProducts({ id, name }) {
     result = await db.Product.query();
   }
 
-  return result && result.length ? result.map(({ id, name, amount }) => ({ id: id.toString(), name, amount })) : null;
+  return result && result.length ? result.map((obj: ProductInterfaceType) => ({ id: obj.id.toString(), name: obj.name, amount: obj.amount })) : null;
 }
 
 /**
@@ -192,7 +218,7 @@ async function findAllProducts({ id, name }) {
  * check if the product is holded by the provided accountId
  * @param {holderAndProductIDs}  { accountId, productId }
  */
-async function checkProductIfHoldByAccountId({ accountId, productId }) {
+async function checkProductIfHoldByAccountId({ accountId, productId }: AccountIdProductIdInterfaceType): Promise<CheckResultHoldThisProduct> {
   const account = await db.Account.query().findById(accountId);
   const carts = await account.$relatedQuery('carts').where('product', productId);
   // const cart = await db.Cart.query().where('holder', accountId).where('product', productId);
@@ -202,6 +228,7 @@ async function checkProductIfHoldByAccountId({ accountId, productId }) {
     }
     return { holdThisProduct: false };
   } else {
+    // tslint:disable-next-line: no-string-throw
     throw 'Not found account';
   }
 }
@@ -210,7 +237,7 @@ async function checkProductIfHoldByAccountId({ accountId, productId }) {
  * find product by Id and update stock amount if stock is greater than or equal to provided amount
  * @param {ProductIdAndAmount} { id, amount }
  */
-async function findProductByIdAndUpdateAmountIfGTE({ id, amount }) {
+async function findProductByIdAndUpdateAmountIfGTE({ id, amount }: ProductIdAndAmountInterfaceType): Promise<ProductInterfaceType> {
   const result = await db.Product.query()
     .where('id', id)
     .where('amount', '>=', amount)
@@ -225,8 +252,10 @@ async function findProductByIdAndUpdateAmountIfGTE({ id, amount }) {
  * @param {CartWithoutID} {holder,product,amount}
  * @return {Promise<Cart>}
  */
-async function holdInCart({ holder, product, amount }) {
-  const result = await db.Cart.query().allowGraph(['holder', 'product', 'amount']).insertGraph({ holder, product, amount });
+async function holdInCart({ holder, product, amount }: { holder: number; product: number; amount: number }): Promise<CartInterfaceType> {
+  const result: Cart = await db.Cart.query()
+    .allowGraph(['holder', 'product', 'amount'])
+    .insertGraph({ holder, product, amount }, { allowRefs: true });
 
   return result ? { id: result.id.toString(), holder: result.holder.toString(), product: result.product.toString(), amount: result.amount } : null;
 }
@@ -236,7 +265,7 @@ async function holdInCart({ holder, product, amount }) {
  * @param {CartWithoutID} {holder,product,amount}
  * @return {Promise<Cart>}
  */
-async function findCartAndUpdateAmount({ holder, product, amount }) {
+async function findCartAndUpdateAmount({ holder, product, amount }: CartWithoutIdInterfaceType): Promise<CartInterfaceType> {
   const result = await db.Cart.query().increment('amount', amount).where('holder', holder).where('product', product).returning('*');
 
   return result && result.length
@@ -248,8 +277,8 @@ async function findCartAndUpdateAmount({ holder, product, amount }) {
  * find one product based on id and/or name
  * @param ProductIDName { id, name }
  */
-async function findProduct({ id, name }) {
-  let result;
+async function findProduct({ id, name }: ProductIdAndNameInterfaceType): Promise<ProductIdInterfaceType> {
+  let result: Product;
   if (id) {
     result = await db.Product.query().findById(id);
   } else if (name) {
@@ -262,10 +291,13 @@ async function findProduct({ id, name }) {
  * find all holder by product Id
  * @param {ProductID} { id }
  */
-async function findHoldersByProductId({ id }) {
-  const result = await db.Cart.relatedQuery('accounts').where('product', id);
-
-  return result ? result : null;
+async function findHoldersByProductId({ id }: ProductIdInterfaceType): Promise<AccountInterfaceType[]> {
+  const result: Account[] | any = await db.Cart.relatedQuery('accounts').where('product', id);
+  return result && result.length
+    ? result.map((obj: AccountInterfaceType) => {
+        return { id: obj.id, username: obj.username };
+      })
+    : null;
 }
 
 /**
@@ -279,7 +311,7 @@ async function findHoldersByProductId({ id }) {
  * @param {holderAndProduct} { holder, product }
  * @return {CartWithoutID}
  */
-async function findCart({ holder, product }) {
+async function findCart({ holder, product }: CartHolderAndProductInterfaceType): Promise<CartInterfaceType> {
   const result = await db.Cart.query().findOne({ holder, product });
   return result ? { id: result.id.toString(), holder: result.holder.toString(), product: result.product.toString(), amount: result.amount } : null;
 }
@@ -288,12 +320,12 @@ async function findCart({ holder, product }) {
  * move product out from cart and from stock
  * @param {holderAndProduct} { holder, product }
  */
-async function removeCart({ holder, product }) {
+async function removeCart({ holder, product }: CartHolderAndProductInterfaceType): Promise<boolean> {
   const result = await db.Cart.query().delete().where('holder', holder).where('product', product);
   return !!result;
 }
 
-module.exports = {
+export default {
   addAccount,
   findAccount,
   getAccountByIdAndCarts,

@@ -16,6 +16,6 @@ schema.virtual('_accountCart', {
   foreignField: 'holder'
 });
 
-const Accounts = mongoose.model('accounts', schema);
+const Accounts: mongoose.Model<mongoose.Document, {}> = mongoose.model('accounts', schema);
 
 export default Accounts;
