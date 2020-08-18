@@ -1,5 +1,6 @@
 node_modules
 build
+dist
 logs
 coverage
-docker_products_depot_handler_3.0.0.img
+docker_products_depot_handler_4.0.0.img

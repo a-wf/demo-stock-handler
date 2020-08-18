@@ -1,7 +1,4 @@
 
-- typescript
 - extented error class for adding internal error code
 - mongo and pg error management
 
-- test and packaging 
-- write why memory rate limiter for postgresql,  write how to make postgresql test
