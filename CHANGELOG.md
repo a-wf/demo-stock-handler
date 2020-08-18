@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v4.0.0] - 2020-08-18
+
+### Test
+
+- convert \*.js in typescript
+
+### Changed
+
+- convert full code in typescript
+
 ## [v3.0.0] - 2020-08-12 (day six)
 
 ### Test

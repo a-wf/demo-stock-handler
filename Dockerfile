@@ -7,14 +7,14 @@ RUN mkdir -p /usr/local/app
 
 WORKDIR /usr/app
 
-ADD build/ ./
+ADD dist/ ./
 
 RUN yarn install --production
 
 
-VOLUME [ "/usr/local/app/src/.env", "/var/log" ]
+VOLUME [ "/usr/local/app/.env", "/var/log" ]
 
 EXPOSE 8080
 EXPOSE 7777
 
-CMD [ "node", "src/index.js" ]
+CMD [ "node", "index.js" ]

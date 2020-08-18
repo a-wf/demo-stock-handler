@@ -135,16 +135,16 @@ RATE_WINDOW_DURATION=1
 
 # Database Part
 
-# database type (<string>, default: 'mongo')
+# database type (<string>, default: 'postgresql')
 DATABASE_TYPE=mongo
 
 # database host address (<string>, default: 'localhost')
 DATABASE_HOST=localhost
 
-# database connection username (<string>, default: undefined)
+# database connection username (<string>, default: 'postgres')
 DATABASE_USERNAME
 
-# database connection password (<string>, default: undefined)
+# database connection password (<string>, default: 'postgres')
 DATABASE_PASSWORD
 
 # database name (<string>, default: 'products_depot_db')
@@ -338,10 +338,8 @@ _Note: Probably, some tests in `tests/units` will failed, because it based on Mo
 
 # Final words <a name="afterwork"></a>
 
-At the end, I succeed to implement a API project, with Rest design and also with GraphQL which is tricky to do. I also made the service supports NoSQL database (MongoDB) and SQL datadase (PostgresQL), add a rate limiter, a logger and try some new modules, like Objection.js, Dotenv, Jest, Supertest.
+At the end, I succeed to implement a API project in Node.js and converted it to Typescript, with Rest design and also with GraphQL which is tricky to do. I also made the service supports NoSQL database (MongoDB) and SQL datadase (PostgresQL), add a rate limiter, a logger and try some new modules, like Objection.js, Dotenv, Jest, Supertest.
 
 If I have time, I like to add an Extended Error class, for handling internal error type, for instance, request parameters validation, database errors, to send more precise error status in request's response. I also would like to add a context store for sharing data like request Id between features and have more precise logs tracking. Also, add a more complete metric generator feature would be better.
-
-I finally didn't convert the code to typescript because of the bad timing. I didn't start implementation with it because at the moment, I didn't known all types of extern modules, some modules doesn't support typescript yet, some have not full-documented and I was thinking if the future works will relate to old projects refactor/rework (from scratch or not), It is better that I train myself to do Js-Ts conversion. I didn't use ESM standard like `export/import` because I used a old Nodejs project template that I created. I was thinking that modifying it to new standard can spend some time (time estimation risk).
 
 I also would like to thank people let me work on this project.
