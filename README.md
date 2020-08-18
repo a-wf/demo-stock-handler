@@ -228,7 +228,7 @@ _for PostgresQL, you have to prepare tables with this migration command_:
 
 ```
 
-npx knex --knexfile ./src/database/postgresql/index.js migrate:latest
+npx knex --knexfile ./src/database/postgresql/knexfile.ts migrate:latest
 or
 yarn knex:migration
 

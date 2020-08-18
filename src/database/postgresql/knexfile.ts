@@ -1,3 +1,4 @@
+require('ts-node/register');
 import { database, common } from '../../config';
 
-export default database[common.nodeEnv];
+module.exports = database[common.nodeEnv];

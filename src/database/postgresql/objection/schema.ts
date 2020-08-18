@@ -1,5 +1,5 @@
 import Knex from 'knex';
-import config from '../knexfile';
+import * as config from '../knexfile';
 import { Model } from 'objection';
 import { KnexClient } from 'knex-extended-types';
 import Account from './account';

@@ -15,7 +15,7 @@
     "build": "rm -rf dist; yarn build-tsc; cp package.json dist/package.json; yarn build-docker; yarn save-docker",
     "build-docker": "docker build . -t docker_products_depot_handler:4.0.0",
     "save-docker": "rm -f docker_products_depot_handler_4.0.0.img; docker save docker_products_depot_handler:4.0.0 > docker_products_depot_handler_4.0.0.img",
-    "knex:migration": "knex --knexfile ./src/database/postgresql/knexfile.js migrate:latest"
+    "knex:migration": "knex --knexfile ./src/database/postgresql/knexfile.ts migrate:latest"
   },
   "husky": {
     "hooks": {
