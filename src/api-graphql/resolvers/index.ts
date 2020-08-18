@@ -1,5 +1,5 @@
-module.exports = {
-  account: require('./account'),
-  cart: require('./cart'),
-  product: require('./product')
-};
+import account from './account';
+import product from './product';
+import cart from './cart';
+
+export { account, product, cart };

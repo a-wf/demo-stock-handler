@@ -18,9 +18,9 @@ declare module 'param-models' {
   }
 
   export interface ProductInterfaceType {
-    id: string | number;
-    name: string;
-    amount: number;
+    id?: string | number;
+    name?: string;
+    amount?: number;
   }
 
   export interface ProductWithoutIdInterfaceType {
@@ -53,11 +53,11 @@ declare module 'param-models' {
 
   export interface ProductIdAndNameInterfaceType {
     id: string | number;
-    name: string;
+    name?: string;
   }
 
   export interface CartInterfaceType {
-    id: string | number;
+    id?: string | number;
     holder: string | number;
     product: string | number;
     amount: number;

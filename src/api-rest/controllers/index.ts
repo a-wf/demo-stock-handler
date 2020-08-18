@@ -6,11 +6,10 @@ const router = express.Router();
 import { addAccount, removeAccount, getAccountHolds } from './account';
 import { addProduct, updateProductStock, listProducts } from './product';
 import { holdProduct, updateCartAmount, moveCart } from './action';
-import { adminPassword } from '../../config/server';
 
 const basicAuthObject = {
   users: {
-    [`${server.adminLogin}`]: adminPassword
+    [`${server.adminLogin}`]: server.adminPassword
   }
 };
 
@@ -30,4 +29,4 @@ function controllers() {
   return router;
 }
 
-module.exports = controllers;
+export default controllers;

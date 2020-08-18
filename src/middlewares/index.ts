@@ -1,6 +1,6 @@
-import { logger } from './../libs/logger';
 import { Request, Response, NextFunction } from 'express';
 import { RateLimiterStoreAbstract } from 'rate-limiter-flexible';
+import { logger } from './../libs/logger';
 
 /**
  * retae limiter middleware
@@ -77,10 +77,10 @@ function setRequestIdInResponseHeader(req: Request, res: Response, next: NextFun
  * @param {Function} next
  */
 // eslint-disable-next-line no-unused-vars
-function errorHandler(err: Error, req: Request, res: Response, next: NextFunction): void {
+function errorHandler(err: Error | string, req: Request, res: Response, next: NextFunction): void {
   if (err instanceof Error) {
     logger.Error('App', 'errorHandler', `${err.stack}`);
-    res.status(500).json({
+    res.status(400).json({
       data: err.message
     });
   } else {

@@ -1,7 +1,7 @@
-import { AuthenticationError, UserInputError } from 'apollo-server-express';
+import { AuthenticationError, UserInputError, IResolvers } from 'apollo-server-express';
 import queries from '../../services/queries';
 
-module.exports = {
+const AccountResolver: IResolvers = {
   Query: {
     /**
      * @typedef {object} accountIDNAME
@@ -112,3 +112,5 @@ module.exports = {
     }
   }
 };
+
+export default AccountResolver;

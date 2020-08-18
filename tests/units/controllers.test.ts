@@ -1,12 +1,13 @@
 'use strict';
 
 jest.mock('./../../src/services/queries');
-const accountControllers = require('../../src/api-rest/controllers/account');
-const queries = require('../../src/services/queries');
-const mock = require('mock-require');
+import * as accountControllers from '../../src/api-rest/controllers/account';
+import queries from '../../src/services/queries';
 
 describe(`Test 'controllers'`, () => {
-  let mockReq, mockRes, mockNext;
+  let mockReq: any;
+  let mockRes: any;
+  let mockNext: any;
   beforeEach(() => {
     mockReq = {};
     mockRes = {
@@ -30,8 +31,8 @@ describe(`Test 'controllers'`, () => {
         const username = 'testUser';
         mockReq.body = { username };
         const data = await accountControllers.addAccount(mockReq, mockRes, mockNext);
-        expect(queries.addAccount.mock.calls.length).toBe(1);
-        expect(queries.addAccount.mock.calls[0][0]).toMatchObject({ username });
+        expect((queries.addAccount as jest.Mock).mock.calls.length).toBe(1);
+        expect((queries.addAccount as jest.Mock).mock.calls[0][0]).toMatchObject({ username });
         expect(mockRes.status.mock.calls.length).toBe(1);
         expect(mockRes.status.mock.calls[0][0]).toEqual(200);
         expect(mockRes.json.mock.calls.length).toBe(1);
@@ -41,7 +42,7 @@ describe(`Test 'controllers'`, () => {
         mockRes.status.mockReturnValue({ send: mockRes.send });
         mockReq.body = {};
         await accountControllers.addAccount(mockReq, mockRes, mockNext);
-        expect(queries.addAccount.mock.calls.length).toBe(0);
+        expect((queries.addAccount as jest.Mock).mock.calls.length).toBe(0);
         expect(mockRes.status.mock.calls.length).toBe(1);
         expect(mockRes.status.mock.calls[0][0]).toEqual(400);
         expect(mockRes.send.mock.calls.length).toBe(1);
@@ -51,7 +52,7 @@ describe(`Test 'controllers'`, () => {
       test('addAccount with a invalid body', async () => {
         mockRes.status.mockReturnValue({ send: mockRes.send });
         await accountControllers.addAccount(mockReq, mockRes, mockNext);
-        expect(queries.addAccount.mock.calls.length).toBe(0);
+        expect((queries.addAccount as jest.Mock).mock.calls.length).toBe(0);
         expect(mockRes.status.mock.calls.length).toBe(0);
         expect(mockNext.mock.calls.length).toBe(1);
         expect(mockNext.mock.calls[0][0]).toBeInstanceOf(Error);
@@ -64,8 +65,8 @@ describe(`Test 'controllers'`, () => {
         const accountId = '5f2f17b1e010e81f505fa541';
         mockReq.params = { accountId };
         const data = await accountControllers.removeAccount(mockReq, mockRes, mockNext);
-        expect(queries.removeAccount.mock.calls.length).toBe(1);
-        expect(queries.removeAccount.mock.calls[0][0]).toMatchObject({ accountId });
+        expect((queries.removeAccount as jest.Mock).mock.calls.length).toBe(1);
+        expect((queries.removeAccount as jest.Mock).mock.calls[0][0]).toMatchObject({ accountId });
         expect(mockRes.status.mock.calls.length).toBe(1);
         expect(mockRes.status.mock.calls[0][0]).toEqual(200);
       });
@@ -73,7 +74,7 @@ describe(`Test 'controllers'`, () => {
         mockReq.params = {};
         mockRes.status.mockReturnValue({ send: mockRes.send });
         await accountControllers.removeAccount(mockReq, mockRes, mockNext);
-        expect(queries.removeAccount.mock.calls.length).toBe(0);
+        expect((queries.removeAccount as jest.Mock).mock.calls.length).toBe(0);
         expect(mockRes.status.mock.calls.length).toBe(1);
         expect(mockRes.status.mock.calls[0][0]).toEqual(400);
         expect(mockRes.send.mock.calls.length).toBe(1);

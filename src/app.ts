@@ -1,7 +1,7 @@
 import config from './config';
 
 import cors from 'cors';
-import express from 'express';
+import express, { Express } from 'express';
 import bodyParser from 'body-parser';
 import promBundle from 'express-prom-bundle';
 
@@ -14,7 +14,7 @@ import database from './database';
 import createRateLimiter from './libs/rate-limiter';
 import { rateLimiterMiddleware, logMiddleware, apiKeyMiddleware, setRequestIdInResponseHeader } from './middlewares';
 
-const app = express();
+const app: Express = express();
 
 app.use(cors());
 app.use(bodyParser.json());

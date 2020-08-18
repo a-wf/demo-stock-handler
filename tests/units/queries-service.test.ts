@@ -1,23 +1,20 @@
 'use strict';
+process.env.NODE_ENV = 'test';
 
 jest.mock('./../../src/database');
-const { logger } = require('../../src/libs/logger');
-const db = require('./../../src/database');
-const queries = require('../../src/services/queries');
+import { logger } from '../../src/libs/logger';
+import { queries } from '../../src/services';
 
 describe(`Test 'Sevices:queries'`, () => {
-  let spyOnLogInfo, spyOnLogWarn, spyOnLogError, spyOnLogDebug;
+  let spyOnLogInfo: jest.SpyInstance<void, [string, string, string]>;
   beforeEach(() => {
     spyOnLogInfo = jest.spyOn(logger, 'Info');
-    spyOnLogWarn = jest.spyOn(logger, 'Warn');
-    spyOnLogError = jest.spyOn(logger, 'Error');
-    spyOnLogDebug = jest.spyOn(logger, 'Debug');
   });
   afterEach(() => {
     jest.restoreAllMocks();
   });
   describe(`addAccount method: `, () => {
-    let spyOnQueryAddAccount;
+    let spyOnQueryAddAccount: jest.SpyInstance<any, unknown[]>;
     beforeEach(() => {
       spyOnQueryAddAccount = jest.spyOn(queries.dbQueries, 'addAccount');
     });
@@ -34,7 +31,7 @@ describe(`Test 'Sevices:queries'`, () => {
     });
 
     test('shoudl throw error', async () => {
-      let username = 'usertest';
+      const username = 'usertest';
       const error = new Error('other error');
       spyOnQueryAddAccount.mockRejectedValue(new Error('E11000 duplicate key'));
       await expect(queries.addAccount({ username })).rejects.toBe('username already exists');

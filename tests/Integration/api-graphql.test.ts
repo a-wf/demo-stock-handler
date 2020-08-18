@@ -2,17 +2,18 @@
 process.env.API_TYPE = 'graphql';
 process.env.DATABASE_NAME = 'db_graphql';
 
-const request = require('supertest');
-const config = require('../../src/config');
+import request from 'supertest';
+import config from '../../src/config';
 
-const testDB = require('../test-utils/db');
-const db = require('../../src/database');
+import testDB from '../test-utils/db';
+import db from '../../src/database';
 db.client = testDB.client || db.client;
 
-const { createToken } = require('../../src/libs/token-auth');
-const app = require('../../src/app');
-function doCall(request) {
-  return request
+import { createToken } from '../../src/libs/token-auth';
+import app from '../../src/app';
+
+function doCall(req: request.Test) {
+  return req
     .set('accept-encoding', 'compress')
     .set('Access-Control-Allow-Origin', '*')
     .set('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, PUT, DELETE')
@@ -22,7 +23,7 @@ function doCall(request) {
     .set('X-API-KEY', `${config.server.apikey}`);
 }
 
-describe('Integration tests - Graphql Api', function () {
+describe('Integration tests - Graphql Api', () => {
   const testAuthToken = createToken({ username: config.server.adminLogin, password: config.server.adminPassword });
   beforeAll(async () => {
     await testDB.connect();
@@ -30,16 +31,21 @@ describe('Integration tests - Graphql Api', function () {
   afterAll(async () => {
     await testDB.teardown();
     await testDB.disconnect(db.client);
-    await app.close();
   });
 
-  describe('Test requests', function () {
-    let accountId, productId, stockAmount, holdAmount, productIdB, stockAmountB, holdAmountB;
-    const productA = 'product-A';
-    const productB = 'product-B';
-    const username = 'testuser-graphql';
+  describe('Test requests', () => {
+    let accountId: string | number;
+    let productId: string | number;
+    let stockAmount: number;
+    let holdAmount: number;
+    let productIdB: string | number;
+    let stockAmountB: number;
+    let holdAmountB: number;
+    const productA: string = 'product-A';
+    const productB: string = 'product-B';
+    const username: string = 'testuser-graphql';
 
-    describe('addAccount', function () {
+    describe('addAccount', () => {
       it('responds 200 with account ID', async () => {
         await doCall(request(app).post('/graphql'))
           .set('Authorization', `Bearer ${testAuthToken}`)
@@ -61,12 +67,13 @@ describe('Integration tests - Graphql Api', function () {
           .expect(400);
       });
 
-      it('responds 403 forbidden', async () => {
-        const username = 'testuser-graphql2';
+      it('responds 200 forbidden', async () => {
+        const username2 = 'testuser-graphql2';
         await doCall(request(app).post('/graphql'))
-          .send({ query: `mutation { addAccount(username: "${username}"){id}}` })
+          .send({ query: `mutation { addAccount(username: "${username2}"){id}}` })
           .expect(200)
           .expect(res => {
+            console.log(JSON.stringify(res.body));
             expect(res.body).toHaveProperty('errors');
             expect(Array.isArray(res.body.errors)).toBe(true);
             expect(res.body.errors[0]).toHaveProperty('message');
@@ -75,7 +82,7 @@ describe('Integration tests - Graphql Api', function () {
       });
     });
 
-    describe('removeAccount', function () {
+    describe('removeAccount', () => {
       it('responds 200 OK', async () => {
         const username2 = 'testuser-graphql2';
         let tempId;
@@ -98,7 +105,7 @@ describe('Integration tests - Graphql Api', function () {
       });
     });
 
-    describe('addProduct', function () {
+    describe('addProduct', () => {
       it('responds 200 OK with product ID', async () => {
         const amount = 100;
         await doCall(request(app).post('/graphql'))
@@ -141,7 +148,7 @@ describe('Integration tests - Graphql Api', function () {
       });
     });
 
-    describe('increase amount of product in depot', function () {
+    describe('increase amount of product in depot', () => {
       it('responds 200 OK and product in stock updated', async () => {
         const amount = 70;
         const expectedAmount = stockAmount + amount;
@@ -173,7 +180,7 @@ describe('Integration tests - Graphql Api', function () {
       });
     });
 
-    describe('list products in depot', function () {
+    describe('list products in depot', () => {
       it('responds 200 OK with list of products', async () => {
         await doCall(request(app).post('/graphql'))
           .send({ operationName: null, variables: {}, query: '{ products { id name amount }}' })
@@ -185,13 +192,13 @@ describe('Integration tests - Graphql Api', function () {
             expect(res.body.data.products[0]).toHaveProperty('amount');
             expect(res.body.data.products[1]).toHaveProperty('name');
             expect(res.body.data.products[1]).toHaveProperty('amount');
-            const product = res.body.data.products.find(prod => prod.id === productId);
+            const product = res.body.data.products.find((prod: { id: string | number }) => prod.id === productId);
             expect(product).toMatchObject({ id: productId, name: productA, amount: stockAmount });
           });
       });
     });
 
-    describe('holdProduct', function () {
+    describe('holdProduct', () => {
       it('responds 200 OK with a hold product', async () => {
         const amount = 80;
         const expectedAmount = stockAmount - amount;
@@ -221,7 +228,7 @@ describe('Integration tests - Graphql Api', function () {
               data: {
                 holdProduct: {
                   holder: { id: accountId, username },
-                  amount: amount,
+                  amount,
                   product: { id: productId, name: productA, amount: expectedAmount }
                 }
               }
@@ -257,7 +264,7 @@ describe('Integration tests - Graphql Api', function () {
       });
     });
 
-    describe('getAccountHolds', function () {
+    describe('getAccountHolds', () => {
       it('responds 200 OK', async () => {
         await doCall(request(app).post(`/graphql`))
           .send({
@@ -300,7 +307,7 @@ describe('Integration tests - Graphql Api', function () {
       });
     });
 
-    describe('updateCartAmount', function () {
+    describe('updateCartAmount', () => {
       it('responds 200 and hold product amount updated', async () => {
         const amount = -35;
         const expectedStockAmount = stockAmount - amount;
@@ -341,7 +348,7 @@ describe('Integration tests - Graphql Api', function () {
       });
     });
 
-    describe('moveCart', function () {
+    describe('moveCart', () => {
       it('responds 200 OK with hold product = 0', async () => {
         await doCall(request(app).post(`/graphql`))
           .send({
@@ -377,7 +384,7 @@ describe('Integration tests - Graphql Api', function () {
       });
     });
 
-    describe('removeAccount and check depot stock', function () {
+    describe('removeAccount and check depot stock', () => {
       it('responds 200 OK, account removed', async () => {
         await doCall(request(app).post('/graphql'))
           .set('Authorization', `Bearer ${testAuthToken}`)

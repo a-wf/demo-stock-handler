@@ -1,6 +1,7 @@
 'use strict';
 
-const config = require('../../src/config');
+import config from '../../src/config';
+
 describe(`Test 'config loading' code`, () => {
   const { common } = config;
 
@@ -39,8 +40,8 @@ describe(`Test 'config loading' code`, () => {
         file: {
           name: 'service_test',
           path: 'logs/test',
-          maxsize: 1024000,
-          maxfiles: 3
+          maxSize: 1024000,
+          maxFiles: 3
         }
       };
       expect(logger).toStrictEqual(expected);
@@ -72,7 +73,7 @@ describe(`Test 'config loading' code`, () => {
   describe(`Server: `, () => {
     test('it should contains mandatory fields', () => {
       const { server } = config;
-      const expected = {
+      const expected: any = {
         apiType: 'graphql',
         protocol: 'http',
         port: 8080,

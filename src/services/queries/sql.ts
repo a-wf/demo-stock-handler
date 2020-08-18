@@ -325,7 +325,7 @@ async function removeCart({ holder, product }: CartHolderAndProductInterfaceType
   return !!result;
 }
 
-export default {
+export {
   addAccount,
   findAccount,
   getAccountByIdAndCarts,
@@ -343,4 +343,4 @@ export default {
   findHoldersByProductId,
   findCart,
   removeCart
-};
+}; 

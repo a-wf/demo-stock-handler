@@ -1,11 +1,11 @@
-import services from '../../services';
-import mongoose from 'mongoose';
+import { Request, Response, NextFunction } from 'express';
+import * as services from '../../services';
 
 /**
  * add new product in stock - express controller
  * @return {Promise<void>}
  */
-async function addProduct(req, res, next) {
+async function addProduct(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const { name, amount } = req.body;
     if (amount <= 0) {
@@ -27,7 +27,7 @@ async function addProduct(req, res, next) {
  * update the stock of a product by increaseing or descresing an amount - express controller
  * @return {Promise<void>}
  */
-async function updateProductStock(req, res, next) {
+async function updateProductStock(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const { amount } = req.body;
     const { productId } = req.params;
@@ -44,7 +44,7 @@ async function updateProductStock(req, res, next) {
  * list all products in stock - express controller
  * @return {Promise<void>}
  */
-async function listProducts(req, res, next) {
+async function listProducts(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const data = await services.queries.listProducts({});
     res.status(200).json({ data });
@@ -53,4 +53,4 @@ async function listProducts(req, res, next) {
   }
 }
 
-module.exports = { addProduct, updateProductStock, listProducts };
+export { addProduct, updateProductStock, listProducts };

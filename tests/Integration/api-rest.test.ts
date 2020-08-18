@@ -2,19 +2,18 @@
 process.env.API_TYPE = 'rest';
 process.env.DATABASE_NAME = 'db_rest';
 
-const request = require('supertest');
-const randomstring = require('randomstring');
+import request from 'supertest';
+import randomstring from 'randomstring';
 
-const testDB = require('../test-utils/db');
-const db = require('../../src/database');
+import testDB from '../test-utils/db';
+import db from '../../src/database';
 db.client = testDB.client || db.client;
 
-const config = require('../../src/config');
-const app = require('../../src/app');
-const { products } = require('../../src/database/mongodb');
+import config from '../../src/config';
+import app from '../../src/app';
 
-function doCall(request) {
-  return request
+function doCall(req: request.Test) {
+  return req
     .set('accept-encoding', 'compress')
     .set('Access-Control-Allow-Origin', '*')
     .set('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, PUT, DELETE')
@@ -24,10 +23,10 @@ function doCall(request) {
     .set('X-API-KEY', `${config.server.apikey}`);
 }
 
-describe('Integration tests - Rest API', function () {
+describe('Integration tests - Rest API', () => {
   const authUser = config.server.adminLogin;
   const authPwd = config.server.adminPassword;
-  let requestId = 0;
+  let requestId: string;
   beforeEach(() => {
     requestId = randomstring.generate();
   });
@@ -37,12 +36,15 @@ describe('Integration tests - Rest API', function () {
   afterAll(async () => {
     await testDB.teardown();
     await testDB.disconnect(db.client);
-    await app.close();
   });
 
-  describe('Test requests', function () {
-    let accountId, productId, stockAmount, holdAmount;
-    describe('POST /account', function () {
+  describe('Test requests', () => {
+    let accountId: string | number;
+    let productId: string | number;
+    let stockAmount: number;
+    let holdAmount: number;
+
+    describe('POST /account', () => {
       it('responds with 200 and request ID', async () => {
         const username = 'testuser-rest';
         await doCall(request(app).post('/account'))
@@ -75,7 +77,7 @@ describe('Integration tests - Rest API', function () {
         await doCall(request(app).post('/account'))
           .set('X-REQUEST-ID', requestId)
           .send({ username })
-          .expect(401)
+          .expect(400)
           .expect('X-REQUEST-ID', requestId)
           .expect(res => {
             expect(res.body).toHaveProperty('data');
@@ -84,7 +86,7 @@ describe('Integration tests - Rest API', function () {
       });
     });
 
-    describe('DELETE /account', function () {
+    describe('DELETE /account', () => {
       it('responds with 200 and request ID', async () => {
         let temp;
         await doCall(request(app).post('/account'))
@@ -103,12 +105,11 @@ describe('Integration tests - Rest API', function () {
           .auth(`${authUser}`, `${authPwd}`)
           .set('X-REQUEST-ID', requestId)
           .expect(200)
-          .expect('X-REQUEST-ID', requestId)
-          .expect(res => {});
+          .expect('X-REQUEST-ID', requestId);
       });
     });
 
-    describe('POST /product', function () {
+    describe('POST /product', () => {
       it('responds OK with product ID', async () => {
         const productA = 'product-A';
         const productB = 'product-B';
@@ -139,7 +140,7 @@ describe('Integration tests - Rest API', function () {
       });
     });
 
-    describe('PATCH /product/:productId', function () {
+    describe('PATCH /product/:productId', () => {
       it('responds OK', async () => {
         const amount = 50;
         await doCall(request(app).patch('/product/' + productId))
@@ -154,7 +155,7 @@ describe('Integration tests - Rest API', function () {
       });
     });
 
-    describe('GET /products', function () {
+    describe('GET /products', () => {
       it('responds OK with list of products', async () => {
         await doCall(request(app).get('/products'))
           .set('X-REQUEST-ID', requestId)
@@ -167,21 +168,20 @@ describe('Integration tests - Rest API', function () {
             expect(res.body.data[0]).toHaveProperty('amount');
             expect(res.body.data[1]).toHaveProperty('name');
             expect(res.body.data[1]).toHaveProperty('amount');
-            const product = res.body.data.find(prod => prod.id === productId);
+            const product = res.body.data.find((prod: { id: string | number }) => prod.id === productId);
             expect(product).toMatchObject({ id: productId, name: 'product-A', amount: stockAmount });
           });
       });
     });
 
-    describe('POST /action/hold?accountId=xxx&productId=xxx', function () {
+    describe('POST /action/hold?accountId=xxx&productId=xxx', () => {
       it('responds 200', async () => {
         const amount = 80;
         await doCall(request(app).post(`/action/hold?accountId=${accountId}&productId=${productId}`))
           .set('X-REQUEST-ID', requestId)
           .send({ name: productId, amount })
           .expect(200)
-          .expect('X-REQUEST-ID', requestId)
-          .expect(res => {});
+          .expect('X-REQUEST-ID', requestId);
 
         await doCall(request(app).get('/products'))
           .set('X-REQUEST-ID', requestId)
@@ -189,7 +189,7 @@ describe('Integration tests - Rest API', function () {
           .expect('X-REQUEST-ID', requestId)
           .expect(res => {
             expect(Array.isArray(res.body.data)).toBe(true);
-            const product = res.body.data.find(prod => prod.id === productId);
+            const product = res.body.data.find((prod: { id: string | number }) => prod.id === productId);
             expect(product).toMatchObject({ id: productId, name: 'product-A', amount: stockAmount - amount });
           });
         stockAmount = stockAmount - amount;
@@ -197,7 +197,7 @@ describe('Integration tests - Rest API', function () {
       });
     });
 
-    describe('GET /account/:accountId/products', function () {
+    describe('GET /account/:accountId/products', () => {
       it('responds 200 with list of account', async () => {
         await doCall(request(app).get(`/account/${accountId}/products`))
           .set('X-REQUEST-ID', requestId)
@@ -205,21 +205,20 @@ describe('Integration tests - Rest API', function () {
           .expect('X-REQUEST-ID', requestId)
           .expect(res => {
             expect(Array.isArray(res.body.data)).toBe(true);
-            const product = res.body.data.find(prod => prod.product.toString() === productId);
+            const product = res.body.data.find((prod: { product: string | number }) => prod.product.toString() === productId);
             expect(product).toMatchObject({ product: productId.toString(), amount: holdAmount });
           });
       });
     });
 
-    describe('PATCH /action/hold?accountId=xxx&productId=xxx', function () {
+    describe('PATCH /action/hold?accountId=xxx&productId=xxx', () => {
       it('responds 200', async () => {
         const amount = -35;
         await doCall(request(app).patch(`/action/hold?accountId=${accountId}&productId=${productId}`))
           .set('X-REQUEST-ID', requestId)
           .send({ amount })
           .expect(200)
-          .expect('X-REQUEST-ID', requestId)
-          .expect(res => {});
+          .expect('X-REQUEST-ID', requestId);
 
         await doCall(request(app).get(`/account/${accountId}/products`))
           .set('X-REQUEST-ID', requestId)
@@ -227,7 +226,7 @@ describe('Integration tests - Rest API', function () {
           .expect('X-REQUEST-ID', requestId)
           .expect(res => {
             expect(Array.isArray(res.body.data)).toBe(true);
-            const product = res.body.data.find(prod => prod.product.toString() === productId);
+            const product = res.body.data.find((prod: { product: string | number }) => prod.product.toString() === productId);
             expect(product).toMatchObject({ product: productId.toString(), amount: holdAmount + amount });
           });
 
@@ -237,7 +236,7 @@ describe('Integration tests - Rest API', function () {
           .expect('X-REQUEST-ID', requestId)
           .expect(res => {
             expect(Array.isArray(res.body.data)).toBe(true);
-            const product = res.body.data.find(prod => prod.id === productId);
+            const product = res.body.data.find((prod: { id: string | number }) => prod.id === productId);
             expect(product).toMatchObject({ id: productId, name: 'product-A', amount: stockAmount - amount });
           });
 
@@ -246,13 +245,12 @@ describe('Integration tests - Rest API', function () {
       });
     });
 
-    describe('DELETE /action/hold?accountId=xxx&productId=xxx', function () {
+    describe('DELETE /action/hold?accountId=xxx&productId=xxx', () => {
       it('responds with json', async () => {
         await doCall(request(app).delete(`/action/hold?accountId=${accountId}&productId=${productId}`))
           .set('X-REQUEST-ID', requestId)
           .expect(200)
-          .expect('X-REQUEST-ID', requestId)
-          .expect(res => {});
+          .expect('X-REQUEST-ID', requestId);
 
         await doCall(request(app).get(`/account/${accountId}/products`))
           .set('X-REQUEST-ID', requestId)
@@ -268,24 +266,24 @@ describe('Integration tests - Rest API', function () {
           .expect('X-REQUEST-ID', requestId)
           .expect(res => {
             expect(Array.isArray(res.body.data)).toBe(true);
-            const product = res.body.data.find(prod => prod.id.toString() === productId);
+            const product = res.body.data.find((prod: { id: string | number }) => prod.id.toString() === productId);
             expect(product).toMatchObject({ id: productId.toString(), name: 'product-A', amount: stockAmount });
           });
       });
     });
   });
 
-  describe('Test Use cases', function () {
-    // describe('Add new products, list products in stock, hold some products, list again remaining in stock', function () {
+  describe('Test Use cases', () => {
+    // describe('Add new products, list products in stock, hold some products, list again remaining in stock',()=>{
     //   it('responds with json', async () => {});
     // });
-    // describe('List products in stock, release some products, list remaining held, list remaining in stock', function () {
+    // describe('List products in stock, release some products, list remaining held, list remaining in stock',()=>{
     //   it('responds with json', async () => {});
     // });
-    // describe('List in stock, List remaining held, move out all, list remaining held, list in stock', function () {
+    // describe('List in stock, List remaining held, move out all, list remaining held, list in stock',()=>{
     //   it('responds with json', async () => {});
     // });
-    // describe('List in stock, hold some products, delete account, list in stock', function () {
+    // describe('List in stock, hold some products, delete account, list in stock',()=>{
     //   it('responds with json', async () => {});
     // });
   });

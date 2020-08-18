@@ -1,7 +1,7 @@
-import mongoose from 'mongoose';
-const Schema: typeof mongoose.Schema = mongoose.Schema;
+import { Document, Model, model, Schema } from 'mongoose';
+import { CartSchemaDoc } from './cart';
 
-const schema: mongoose.Schema<any> = new Schema({
+const schema = new Schema({
   username: {
     type: String,
     required: true
@@ -16,6 +16,10 @@ schema.virtual('_accountCart', {
   foreignField: 'holder'
 });
 
-const Accounts: mongoose.Model<mongoose.Document, {}> = mongoose.model('accounts', schema);
+export interface AccountSchemaDoc extends Document {
+  username: string;
+  _accountCart?: CartSchemaDoc[];
+}
+interface AccountSchemaModel extends Model<AccountSchemaDoc> {}
 
-export default Accounts;
+export default model<AccountSchemaDoc, AccountSchemaModel>('accounts', schema);

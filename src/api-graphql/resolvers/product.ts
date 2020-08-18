@@ -1,7 +1,7 @@
 import queries from '../../services/queries';
-import { AuthenticationError, UserInputError } from 'apollo-server-express';
+import { AuthenticationError, UserInputError, IResolvers } from 'apollo-server-express';
 
-module.exports = {
+const ProductResolver: IResolvers = {
   Query: {
     products: async (rootValue, args) => {
       const { productId, name } = args;
@@ -25,7 +25,7 @@ module.exports = {
       } else if (!authValidated) {
         return new AuthenticationError('must be authenticated as admin');
       }
-      return await queries.getProductHolders(parent.id, parent.name);
+      return await queries.getProductHolders({ id: parent.id, name: parent.name });
     }
   },
   Mutation: {
@@ -54,3 +54,5 @@ module.exports = {
     }
   }
 };
+
+export default ProductResolver;

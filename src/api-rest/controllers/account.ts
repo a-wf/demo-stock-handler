@@ -1,10 +1,11 @@
-import services from '../../services';
+import { Request, Response, NextFunction } from 'express';
+import * as services from '../../services';
 
 /**
  * Add new account - express controller
  * @return {Promise<void>}
  */
-async function addAccount(req, res, next) {
+async function addAccount(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const { username } = req.body;
     if (username) {
@@ -22,7 +23,7 @@ async function addAccount(req, res, next) {
  * Remove account - express controller
  * @return {Promise<void>}
  */
-async function removeAccount(req, res, next) {
+async function removeAccount(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const { accountId } = req.params;
     if (accountId) {
@@ -40,7 +41,7 @@ async function removeAccount(req, res, next) {
  * Get list of holded product of an account - express controller
  * @return {Promise<void>}
  */
-async function getAccountHolds(req, res, next) {
+async function getAccountHolds(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const { accountId } = req.params;
     if (accountId) {
@@ -54,4 +55,4 @@ async function getAccountHolds(req, res, next) {
   }
 }
 
-module.exports = { addAccount, removeAccount, getAccountHolds };
+export { addAccount, removeAccount, getAccountHolds };

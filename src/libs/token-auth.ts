@@ -28,4 +28,4 @@ async function validateToken({ username, password, token }: CredentialWithToken)
   }
 }
 
-module.exports = { createToken, validateToken };
+export { createToken, validateToken };

@@ -1,13 +1,18 @@
-'use strict';
+import { database } from '../../src/config';
+import mongoose, { Connection } from 'mongoose';
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import Knex from 'knex';
 
-const { database } = require('./../../src/config');
-const mongoose = require('mongoose');
-const { MongoMemoryServer } = require('mongodb-memory-server');
+export interface KnexClient extends Knex<any, unknown[]> {
+  close?(): Promise<void>;
+}
 const mongod = new MongoMemoryServer();
-// const knex = require('knex');
 
-let client, connect, disconnect, teardown;
-let dbType = database.test.client;
+let client: mongoose.Connection;
+let connect: { (): Promise<void>; (): void };
+let disconnect: (dbclient: KnexClient | Connection) => Promise<void>;
+let teardown: { (): Promise<void>; (): void };
+const dbType = database.test.client;
 
 switch (dbType) {
   case 'mongodb':
@@ -28,21 +33,22 @@ switch (dbType) {
 
     teardown = async () => {
       const collections = mongoose.connection.collections;
-
-      for (const key in collections) {
+      for (const key of Object.keys(collections)) {
         const collection = collections[key];
-        await collection.deleteMany();
+        await collection.deleteMany({});
       }
     };
 
     break;
   case 'postgresql':
   default:
-    connect = () => {};
-    disconnect = client => {
-      client.destroy();
+    // tslint:disable-next-line: no-empty
+    connect = async () => {};
+    disconnect = async (dbclient: KnexClient | Connection) => {
+      dbclient.close();
     };
-    teardown = () => {};
+    // tslint:disable-next-line: no-empty
+    teardown = async () => {};
   // connect = async () => {
   //   client = knex({
   //     client: 'postgres',
@@ -89,8 +95,7 @@ switch (dbType) {
   //   await client.destroy();
   // };
 }
-
-module.exports = {
+export default {
   client,
   connect,
   teardown,

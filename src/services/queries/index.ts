@@ -15,7 +15,9 @@ import {
   CartsInterfaceType
 } from 'param-models';
 
-let dbQueries: any;
+import { DBQueriesFunctions } from 'dbqueries';
+
+let dbQueries: DBQueriesFunctions;
 
 switch (config.database[config.common.nodeEnv].client) {
   case 'mongodb':
@@ -62,7 +64,7 @@ async function addAccount({ username }: AccountNameInterfaceType): Promise<Accou
  * @param {accountIDUserName} {username}
  * @return {Promise<AccountID>}
  */
-async function getAccount({ accountId, username }: { accountId: string | number; username: string }): Promise<AccountInterfaceType> {
+async function getAccount({ accountId, username }: { accountId: string | number; username?: string }): Promise<AccountInterfaceType> {
   logger.Debug('Queries', 'getAccount', `args: ${JSON.stringify({ accountId, username })}`);
   const result: AccountInterfaceType = await dbQueries.findAccount({ id: accountId, username });
   // tslint:disable-next-line: no-string-throw
@@ -184,7 +186,7 @@ async function updateProductStock({ productId, amount }: { productId: number | s
  * @param {ProductIDName} {productId,name}
  * @return {Promise<Array<Product>}
  */
-async function listProducts({ productId, name }: { productId: number | string; name: string }): Promise<ProductInterfaceType[]> {
+async function listProducts({ productId, name }: { productId?: number | string; name?: string }): Promise<ProductInterfaceType[]> {
   logger.Debug('Queries', 'listProducts', `args: ${JSON.stringify({ productId, name })}`);
   const result: ProductInterfaceType[] = await dbQueries.findAllProducts({ id: productId, name });
   // tslint:disable-next-line: no-string-throw
@@ -286,11 +288,11 @@ async function updateCartAmount({
  * get holders list related to one product
  * @param {ProductIDName} { productId, name }
  */
-async function getProductHolders({ id, name }: ProductIdAndNameInterfaceType): Promise<AccountInterfaceType> {
+async function getProductHolders({ id, name }: ProductIdAndNameInterfaceType): Promise<AccountInterfaceType[]> {
   logger.Debug('Queries', 'getProductHolders', `args: ${JSON.stringify({ id, name })}`);
   const found = await dbQueries.findProduct({ id, name });
   if (found) {
-    const result: AccountInterfaceType = await dbQueries.findHoldersByProductId({ id: found.id });
+    const result: AccountInterfaceType[] = await dbQueries.findHoldersByProductId({ id: found.id });
     return result;
   } else {
     // tslint:disable-next-line: no-string-throw
@@ -338,7 +340,7 @@ async function moveCart({ accountId, productId }: AccountIdProductIdInterfaceTyp
   }
 }
 
-module.exports = {
+const queries = {
   addAccount,
   getAccount,
   removeAccount,
@@ -352,3 +354,5 @@ module.exports = {
   moveCart,
   dbQueries: config.common.nodeEnv === 'test' ? dbQueries : null
 };
+
+export default queries;

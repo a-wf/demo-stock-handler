@@ -1,12 +1,12 @@
 'use strict';
 
-const winston = require('winston');
-const loggerConfig = require('./../../src/config').logger;
+import winston from 'winston';
+import { logger as loggerConfig } from './../../src/config';
+import Logger, { logger } from './../../src/libs/logger';
 
 describe(`Test 'logger'`, () => {
   describe(`Logger class: `, () => {
-    const { Logger } = require('./../../src/libs/logger');
-    let mockCreateLogger;
+    let mockCreateLogger: jest.Mock<any, any>;
     beforeEach(() => {
       mockCreateLogger = winston.createLogger = jest.fn().mockReturnValue({ mock: 'tested' });
     });
@@ -17,13 +17,14 @@ describe(`Test 'logger'`, () => {
     test('constructor', () => {
       const testLogger = new Logger(loggerConfig);
       expect(testLogger.winston).toStrictEqual({ mock: 'tested' });
-      expect(winston.createLogger.mock.calls.length).toBe(1);
+      expect((winston.createLogger as jest.Mock).mock.calls.length).toBe(1);
     });
   });
 
   describe(`logger object: `, () => {
-    const { logger } = require('./../../src/libs/logger');
-    let spyOnLogMethod, spyOnWinstonError, spyOnWinstonLog;
+    let spyOnLogMethod: jest.SpyInstance<any, unknown[]>;
+    let spyOnWinstonError: jest.SpyInstance<any, unknown[]>;
+    let spyOnWinstonLog: jest.SpyInstance<any, unknown[]>;
     beforeEach(() => {
       spyOnLogMethod = jest.spyOn(logger, 'Log');
       spyOnWinstonError = jest.spyOn(logger.winston, 'error');

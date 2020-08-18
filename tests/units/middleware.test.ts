@@ -1,10 +1,14 @@
 'use strict';
 
-const { rateLimiterMiddleware, logMiddleware, apiKeyMiddleware, errorHandler } = require('../../src/middlewares');
-const { logger } = require('../../src/libs/logger');
+import { rateLimiterMiddleware, logMiddleware, apiKeyMiddleware, errorHandler } from '../../src/middlewares';
+import { logger } from '../../src/libs/logger';
+import { Request } from 'express';
+import { RateLimiterStoreAbstract } from 'rate-limiter-flexible';
 
 describe(`Test 'middleware'`, () => {
-  let mockReq, mockRes, mockNext;
+  let mockReq: any;
+  let mockRes: any;
+  let mockNext: any;
   beforeEach(() => {
     mockReq = {
       get: jest.fn()
@@ -24,7 +28,7 @@ describe(`Test 'middleware'`, () => {
   });
 
   describe(`rateLimiterMiddleware: `, () => {
-    let mockRateLimiter;
+    let mockRateLimiter: any;
 
     afterEach(() => {
       mockRateLimiter.consume.mockClear();
@@ -32,15 +36,15 @@ describe(`Test 'middleware'`, () => {
     });
     test('call good way', () => {
       mockRateLimiter = {
-        consume: jest.fn().mockResolvedValue()
+        consume: jest.fn().mockResolvedValue(undefined)
       };
-      rateLimiterMiddleware(mockRateLimiter)(mockReq, mockRes, mockNext);
+      rateLimiterMiddleware((mockRateLimiter as unknown) as RateLimiterStoreAbstract)(mockReq, mockRes, mockNext);
       expect(mockRateLimiter.consume.mock.calls.length).toBe(1);
     });
   });
 
   describe(`logMiddleware: `, () => {
-    let mockLogger;
+    let mockLogger: jest.SpyInstance<void, [string, string, string]>;
     beforeEach(() => {
       mockLogger = jest.spyOn(logger, 'Info');
     });
@@ -49,7 +53,7 @@ describe(`Test 'middleware'`, () => {
     });
     test('call', () => {
       logMiddleware(
-        {
+        ({
           method: 'post',
           originalUrl: 'url-test',
           params: {
@@ -61,7 +65,7 @@ describe(`Test 'middleware'`, () => {
           body: {
             data: 'body'
           }
-        },
+        } as unknown) as Request,
         undefined,
         mockNext
       );
@@ -97,7 +101,7 @@ describe(`Test 'middleware'`, () => {
   });
 
   describe(`errorHandler: `, () => {
-    let mockLogger;
+    let mockLogger: jest.SpyInstance<void, [string, string, string]>;
     beforeEach(() => {
       mockLogger = jest.spyOn(logger, 'Error');
     });
@@ -112,7 +116,7 @@ describe(`Test 'middleware'`, () => {
       expect(mockLogger.mock.calls.length).toBe(1);
       expect(mockLogger.mock.calls[0]).toMatchObject(['App', 'errorHandler', `${err.stack}`]);
       expect(mockRes.status.mock.calls.length).toBe(1);
-      expect(mockRes.status.mock.calls[0][0]).toEqual(500);
+      expect(mockRes.status.mock.calls[0][0]).toEqual(400);
       expect(mockRes.json.mock.calls.length).toBe(1);
       expect(mockRes.json.mock.calls[0][0]).toMatchObject({
         data: err.message

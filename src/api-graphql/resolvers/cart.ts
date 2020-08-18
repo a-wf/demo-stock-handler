@@ -1,7 +1,7 @@
-import { UserInputError } from 'apollo-server-express';
+import { UserInputError, IResolvers } from 'apollo-server-express';
 import queries from '../../services/queries';
 
-module.exports = {
+const CartResolver: IResolvers = {
   Cart: {
     id: parent => {
       return parent.id;
@@ -35,3 +35,5 @@ module.exports = {
     }
   }
 };
+
+export default CartResolver;

@@ -1,4 +1,5 @@
 import { ApolloServer } from 'apollo-server-express';
+import { Express, Request } from 'express';
 
 import config from './../config';
 import { logger } from './../libs/logger';
@@ -11,7 +12,7 @@ class GraphqlAPI {
    *  GraphqlAPI constructor
    * @param {expressApp} app
    */
-  constructor(app) {
+  constructor(app: Express) {
     const enableDoc = config.common.nodeEnv === 'development' ? true : false;
 
     createToken({ username: config.server.adminLogin, password: config.server.adminPassword })
@@ -26,11 +27,11 @@ class GraphqlAPI {
 
     const apolloConfig = {
       schema,
-      context: async ({ req }) => {
+      context: async ({ req }: { req: Request }) => {
         try {
           const tokenWithBearer = req.get('authorization') || '';
           const token = tokenWithBearer.split(' ')[1];
-          let authValidated = false;
+          let authValidated: boolean | string = false;
           if (!token) return { authValidated };
           authValidated = await validateToken({ username: config.server.adminLogin, password: config.server.adminPassword, token });
           return { authValidated };
@@ -50,4 +51,4 @@ class GraphqlAPI {
   }
 }
 
-module.exports = GraphqlAPI;
+export default GraphqlAPI;

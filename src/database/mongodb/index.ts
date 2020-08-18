@@ -46,4 +46,4 @@ if (common.nodeEnv !== 'test') {
   });
 }
 
-export default { client, accounts, products, carts };
+export { client, accounts, products, carts };

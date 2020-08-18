@@ -8,4 +8,4 @@ import typeDefs from './design/schema-graphql';
 import { account, product, cart } from './resolvers';
 const resolvers = [account, product, cart];
 
-module.exports = makeExecutableSchema({ typeDefs, resolvers });
+export default makeExecutableSchema({ typeDefs, resolvers });

@@ -1,4 +1,4 @@
-import db from './../../database/mongodb';
+import * as db from './../../database/mongodb';
 import mongoose from 'mongoose';
 import {
   AccountNameInterfaceType,
@@ -267,7 +267,7 @@ async function findProduct({ id, name }: ProductIdAndNameInterfaceType): Promise
  */
 async function findHoldersByProductId({ id }: ProductIdInterfaceType): Promise<AccountInterfaceType[]> {
   const result = await db.carts.find({ product: id }).populate('_account');
-  return result ? result.map((cart: { _account: any[] }) => cart._account[0]) : null;
+  return result ? result.map((cart: { _account?: any[] }) => (cart._account ? cart._account[0] : null)) : null;
 }
 
 /**
@@ -295,7 +295,7 @@ async function removeCart({ holder, product }: CartHolderAndProductInterfaceType
   return !!result.deletedCount;
 }
 
-export default {
+export {
   addAccount,
   findAccount,
   getAccountByIdAndCarts,
