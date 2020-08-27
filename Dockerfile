@@ -5,7 +5,7 @@ ENV LOG_LEVEL "info"
 
 RUN mkdir -p /usr/local/app
 
-WORKDIR /usr/app
+WORKDIR /usr/local/app
 
 ADD dist/ ./
 
